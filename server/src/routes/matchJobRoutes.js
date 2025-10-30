@@ -91,9 +91,48 @@ function safeJsonParse(rawText) {
 
 router.post("/job-matches", authMiddleware, async (req, res) => {
   try {
-    const { skills } = req.body;
-    if (!Array.isArray(skills) || skills.length === 0) {
-      return res.status(400).json({ success: false, error: "Skills array is required and must not be empty." });
+    const { resume_id } = req.body;
+
+    if (!resume_id) {
+      return res.status(400).json({ success: false, error: "resume_id is required." });
+    }
+
+    const existingMatches = await pool.query(
+      `SELECT m.job_id, m.match_score, m.reasoning, j.title 
+       FROM matches m
+       JOIN jobs j ON m.job_id = j.id
+       WHERE m.resume_id = $1
+       ORDER BY m.match_score DESC`,
+      [resume_id]
+    );
+
+    if (existingMatches.rows.length > 0) {
+      console.log("Returning cached job matches");
+
+      return res.json({
+        success: true,
+        data: existingMatches.rows.map(r => ({
+          job_id: r.job_id,
+          title: r.title,
+          match_score: r.match_score,
+          ...JSON.parse(r.reasoning)
+        }))
+      });
+    }
+
+    const resume = await pool.query(
+      `SELECT analysis_result FROM resumes WHERE id = $1`,
+      [resume_id]
+    );
+
+    if (resume.rows.length === 0) {
+      return res.status(404).json({ success: false, error: "Resume not found" });
+    }
+
+    const skills = resume.rows[0].analysis_result?.skills || [];
+
+    if (!skills.length) {
+      return res.status(400).json({ success: false, error: "Resume has no extracted skills." });
     }
 
     const jobsData = await pool.query(
@@ -101,56 +140,35 @@ router.post("/job-matches", authMiddleware, async (req, res) => {
     );
 
     const results = jobsData.rows.map(job => {
-      let requiredSkills;
-      
-      if (Array.isArray(job.skills_required)) {
-        requiredSkills = job.skills_required;
-      } else if (typeof job.skills_required === 'string') {
-        requiredSkills = job.skills_required.split(',').map(s => s.trim()).filter(s => s.length > 0);
-      } else {
-        requiredSkills = [];
-      }
+      const requiredSkills = Array.isArray(job.skills_required)
+        ? job.skills_required
+        : job.skills_required?.split(",").map(s => s.trim()) || [];
 
-      const score = similarityScore(skills, requiredSkills, job.id); 
+      const score = similarityScore(skills, requiredSkills, job.id);
+
       return {
         job_id: job.id,
         title: job.title,
-        description: job.description,
-        skills_required: requiredSkills,
-        match_score: score
+        match_score: score,
+        skills_required: requiredSkills
       };
     });
 
     const topJobs = results.sort((a, b) => b.match_score - a.match_score).slice(0, 10);
 
     const prompt = `
-    Analyze the relevance of these top jobs based on the candidate's skills.
-    
-    Candidate Skills: [${skills.join(", ")}]
+Candidate Skills: [${skills.join(", ")}]
 
-    For each job, provide a brief reasoning, a list of 'FIT' skills (skills matching the candidate), and a list of 'MISSING' skills (required skills the candidate does not have).
+Jobs to analyze:
+${JSON.stringify(topJobs)}
 
-    Respond ONLY with a single JSON object. The keys must be the job_id.
-
-    JSON Structure Example:
-    {
-      "101": {
-        "reasoning": "Excellent match due to core JavaScript and React skills.",
-        "fit_skills": ["React", "JavaScript"],
-        "missing_skills": ["TypeScript", "AWS"]
-      }
-      // ... other jobs
-    }
-
-    Jobs to analyze:
-    ${JSON.stringify(topJobs)}
+Respond ONLY as JSON format:
+{ job_id:{ reasoning, fit_skills, missing_skills } }
     `;
 
     const payload = {
       contents: [{ parts: [{ text: prompt }] }],
-      generationConfig: {
-        responseMimeType: "application/json"
-      }
+      generationConfig: { responseMimeType: "application/json" }
     };
 
     const response = await fetchWithRetry(API_URL, {
@@ -160,25 +178,37 @@ router.post("/job-matches", authMiddleware, async (req, res) => {
     });
 
     const result = await response.json();
-    const rawResponseText = result?.candidates?.[0]?.content?.parts?.[0]?.text;
-    
-    if (!rawResponseText) {
-      const errorMessage = result?.error?.message || 'LLM returned an empty response or an unknown API error.';
-      throw new Error(`Gemini API Error: ${errorMessage}`);
+    const rawResponse = result?.candidates?.[0]?.content?.parts?.[0]?.text;
+    const reasoning = safeJsonParse(rawResponse);
+
+    if (!reasoning || reasoning.error) {
+      throw new Error("AI did not return reasoning JSON");
     }
 
-    const reasoning = safeJsonParse(rawResponseText);
-    //console.log(reasoning)
+    for (const job of topJobs) {
+      await pool.query(
+        `INSERT INTO matches (resume_id, job_id, match_score, reasoning, created_at)
+         VALUES ($1, $2, $3, $4, NOW())`,
+        [
+          resume_id,
+          job.job_id,
+          job.match_score,
+          JSON.stringify(reasoning[job.job_id])
+        ]
+      );
+    }
+
     return res.json({
       success: true,
-      data: topJobs,
-      reasoning
+      data: topJobs.map(job => ({
+        ...job,
+        ...reasoning[job.job_id]
+      }))
     });
 
   } catch (err) {
     console.error("Match API Error:", err);
-    const status = err.message && err.message.includes("Gemini") ? 502 : 500;
-    res.status(status).json({ error: "Failed to match jobs or process AI reasoning." });
+    res.status(500).json({ success: false, error: "Failed to match jobs." });
   }
 });
 

@@ -9,7 +9,6 @@ export default function JobMatches() {
   const [loadingResumes, setLoadingResumes] = useState(true);
   const [loadingMatches, setLoadingMatches] = useState(false);
 
-  // Fetch uploaded resumes
   useEffect(() => {
     async function fetchResumes() {
       try {
@@ -26,37 +25,35 @@ export default function JobMatches() {
     fetchResumes();
   }, []);
 
-  // Fetch job matches for selected resume
   useEffect(() => {
     async function fetchMatches() {
-      if (!selectedResume?.analysis_result?.skills?.length) return;
-      try {
-        setLoadingMatches(true);
-        const res = await API.post("/get/job-matches", {
-          skills: selectedResume.analysis_result.skills,
-        });
-        setMatchData(res.data);
-      } catch (err) {
-        console.error("Match error:", err);
-        setMatchData(null);
-      } finally {
-        setLoadingMatches(false);
-      }
+      if (!selectedResume?.id) return;
+    try {
+      setLoadingMatches(true);
+      const res = await API.post("/get/job-matches", {
+        resume_id: selectedResume.id
+      });
+      setMatchData(res.data);
+    } catch (err) {
+      console.error("Match error:", err);
+      setMatchData(null);
+    } finally {
+      setLoadingMatches(false);
     }
-    fetchMatches();
-  }, [selectedResume]);
+  }
+  fetchMatches();
+}, [selectedResume]);
 
   const handleSelectResume = (resume) => {
     setSelectedResume(resume);
-    setMatchData(null); // Reset match data when selecting a new resume
+    setMatchData(null);
   };
 
   return (
     <div className="max-w-6xl mx-auto p-6 grid grid-cols-1 md:grid-cols-3 gap-6">
 
-      {/* Left: Resume List */}
       <div className="bg-white p-4 rounded-lg shadow-md overflow-y-auto max-h-[600px]">
-        <h3 className="text-lg font-semibold mb-4">📄 Uploaded Resumes</h3>
+        <h3 className="text-lg font-semibold mb-4">Uploaded Resumes</h3>
         {loadingResumes ? (
           <p className="text-gray-500">Loading resumes...</p>
         ) : resumes.length === 0 ? (
@@ -85,7 +82,6 @@ export default function JobMatches() {
         )}
       </div>
 
-      {/* Right: Job Matches */}
       <div className="md:col-span-2 bg-white p-6 rounded-lg shadow-md overflow-y-auto max-h-[600px]">
         {!selectedResume ? (
           <p className="text-center mt-20 text-red-600">
@@ -96,7 +92,7 @@ export default function JobMatches() {
         ) : matchData?.data?.length ? (
           <>
             <h2 className="text-xl font-semibold mb-4">
-              🎯 Job Matches for {selectedResume.original_name}
+               Job Matches for {selectedResume.original_name}
             </h2>
 
             <div className="space-y-4">
@@ -112,7 +108,6 @@ export default function JobMatches() {
                       <p className="text-sm text-gray-600 font-semibold">{job.match_score}%</p>
                     </div>
 
-                    {/* Match Score Bar */}
                     <div className="w-full bg-gray-200 rounded-full h-2 mb-2">
                       <div
                         className="bg-green-500 h-2 rounded-full"
@@ -129,6 +124,14 @@ export default function JobMatches() {
                         {missing_skills.length > 0 && (
                           <p><span className="font-semibold">Missing Skills:</span> {missing_skills.join(", ")}</p>
                         )}
+                        <a
+                          href="https://huggingface.co/spaces/RamaRaju18/Learning_Pat_Generator"
+                          target="_blank"
+                          className="text-blue-600 underline"
+                        >
+                          Learn missing skills
+                        </a>
+
                       </div>
                     )}
                   </div>
