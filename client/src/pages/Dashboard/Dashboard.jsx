@@ -18,9 +18,9 @@ export default function Dashboard() {
   const renderContent = () => {
     switch (activeTab) {
       case 'resume':
-        return <ResumeUpload />
+        return <ResumeUpload setActiveTab={setActiveTab} />;
       case 'jobs':
-        return <JobMatches />
+        return <JobMatches setActiveTab={setActiveTab}/>
       case 'profile':
         return <Profile />
       default:

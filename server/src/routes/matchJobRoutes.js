@@ -168,7 +168,7 @@ router.post("/job-matches", authMiddleware, async (req, res) => {
     }
 
     const reasoning = safeJsonParse(rawResponseText);
-
+    //console.log(reasoning)
     return res.json({
       success: true,
       data: topJobs,

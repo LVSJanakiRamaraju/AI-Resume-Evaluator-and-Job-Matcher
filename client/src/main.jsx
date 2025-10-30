@@ -7,7 +7,9 @@ import Login from './pages/Login'
 import Protected from './pages/Protected'
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
-import AuthProvider from './context/AuthContext'
+import Dashboard from './pages/Dashboard/Dashboard.jsx'
+import AuthProvider from './context/AuthContext';
+import { ResumeProvider } from "./context/ResumeContext.jsx";
 import './index.css'
 
 ReactDOM.createRoot(document.getElementById('root')).render(
@@ -20,7 +22,13 @@ ReactDOM.createRoot(document.getElementById('root')).render(
           <Route path="/login" element={<Login />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password/:token" element={<ResetPassword />} />
-          <Route path="/dashboard" element={<Protected />} />
+          <Route path="/dashboard"
+            element={
+              <ResumeProvider>
+                <Dashboard />
+              </ResumeProvider>
+            }
+          />
         </Routes>
       </AuthProvider>
     </BrowserRouter>
