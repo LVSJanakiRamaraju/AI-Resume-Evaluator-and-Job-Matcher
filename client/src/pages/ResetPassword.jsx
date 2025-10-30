@@ -1,14 +1,13 @@
-import React, { useContext, useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import React, { useState } from "react";
+import { useNavigate, useParams, Link } from "react-router-dom";
 import API from "../api";
-import { AuthContext } from "../context/AuthContext";
 
-export default function Login() {
-  const [form, setForm] = useState({ email: "", password: "" });
+export default function ResetPassword() {
+  const [form, setForm] = useState({ password: "", confirmPassword: "" });
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-  const { setUser } = useContext(AuthContext);
+  const { token } = useParams();
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -16,17 +15,21 @@ export default function Login() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
     setMessage("");
+    setLoading(true);
+
+    if (form.password !== form.confirmPassword) {
+      setMessage("Passwords do not match.");
+      setLoading(false);
+      return;
+    }
+
     try {
-      const res = await API.post("/auth/login", form);
-      const token = res.data.token;
-      localStorage.setItem("token", token);
-      setUser(res.data.user);
-      setMessage("Login successful! Redirecting...");
-      setTimeout(() => navigate("/dashboard"), 1000);
+      await API.post(`/auth/reset-password/${token}`, { password: form.password });
+      setMessage("Password reset successful! Redirecting...");
+      setTimeout(() => navigate("/login"), 1500);
     } catch (err) {
-      setMessage(err.response?.data?.error || "Invalid credentials. Try again.");
+      setMessage(err.response?.data?.error || "Failed to reset password.");
     } finally {
       setLoading(false);
     }
@@ -39,22 +42,21 @@ export default function Login() {
 
       <div className="relative z-10 w-full max-w-md bg-white rounded-2xl shadow-2xl border border-slate-100 p-8">
         <h2 className="text-3xl font-extrabold text-gray-800 text-center mb-2">
-          Welcome Back User,
+          Reset Password
         </h2>
         <p className="text-gray-500 text-center mb-6 text-sm">
-          Log in to continue to your{" "}
-          <span className="font-medium text-blue-600">AI Resume Evaluator</span>
+          Enter your new password below to regain access to your account.
         </p>
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-1">
-              Email
+              New Password
             </label>
             <input
-              type="email"
-              name="email"
-              placeholder="Enter your email"
+              type="password"
+              name="password"
+              placeholder="Enter new password"
               onChange={handleChange}
               required
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
@@ -62,21 +64,13 @@ export default function Login() {
           </div>
 
           <div>
-            <div className="flex items-center justify-between mb-1">
-              <label className="block text-sm font-semibold text-gray-700">
-                Password
-              </label>
-              <Link
-                to="/forgot-password"
-                className="text-xs text-blue-600 hover:underline font-medium"
-              >
-                Forgot Password?
-              </Link>
-            </div>
+            <label className="block text-sm font-semibold text-gray-700 mb-1">
+              Confirm Password
+            </label>
             <input
               type="password"
-              name="password"
-              placeholder="Enter your password"
+              name="confirmPassword"
+              placeholder="Confirm new password"
               onChange={handleChange}
               required
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
@@ -92,14 +86,14 @@ export default function Login() {
                 : "bg-blue-600 hover:bg-blue-700 shadow"
             }`}
           >
-            {loading ? "Logging in..." : "Login"}
+            {loading ? "Resetting..." : "Reset Password"}
           </button>
         </form>
 
         {message && (
           <p
             className={`text-center text-sm mt-4 ${
-              message.startsWith("Login successful")
+              message.startsWith("Password reset successful!")
                 ? "text-green-600"
                 : "text-red-500"
             }`}
@@ -109,12 +103,12 @@ export default function Login() {
         )}
 
         <p className="text-center text-gray-500 text-sm mt-6">
-          Don’t have an account?{" "}
+          Back to{" "}
           <Link
-            to="/register"
+            to="/login"
             className="text-blue-600 hover:underline font-medium"
           >
-            Register here
+            Login
           </Link>
         </p>
       </div>

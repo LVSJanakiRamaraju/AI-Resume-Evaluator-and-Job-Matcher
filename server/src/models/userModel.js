@@ -21,8 +21,21 @@ async function getUserById(id) {
   return res.rows[0] || null;
 }
 
+async function updateUserPassword(id, newPasswordHash) {
+  const query = `
+    UPDATE users
+    SET password_hash = $1
+    WHERE id = $2
+    RETURNING id, name, email, role, created_at
+  `;
+  const values = [newPasswordHash, id];
+  const res = await pool.query(query, values);
+  return res.rows[0];
+}
+
 module.exports = {
   createUser,
   getUserByEmail,
   getUserById,
+  updateUserPassword,
 };

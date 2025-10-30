@@ -1,10 +1,12 @@
 require('dotenv').config();
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const { createUser, getUserByEmail } = require('../models/userModel');
+const { createUser, getUserByEmail, updateUserPassword } = require('../models/userModel');
+const { sendResetPasswordEmail } = require('../utils/emailService');
 
 const JWT_SECRET = process.env.JWT_SECRET;
 const JWT_EXPIRES = '1d';
+const RESET_TOKEN_EXPIRES = '5m';
 
 async function register(req, res) {
   try {
@@ -59,4 +61,55 @@ async function login(req, res) {
   }
 }
 
-module.exports = { register, login };
+async function forgotPassword(req, res) {
+  try {
+    const { email } = req.body;
+    if (!email) return res.status(400).json({ error: 'Email is required' });
+
+    const user = await getUserByEmail(email);
+    if (!user) return res.status(404).json({ error: 'No account found with this email' });
+
+    const resetToken = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: RESET_TOKEN_EXPIRES });
+    const resetLink = `${process.env.FRONTEND_URL}/reset-password/${resetToken}`;
+
+    await sendResetPasswordEmail(user.email, user.name, resetLink);
+
+    return res.json({ message: 'Password reset link sent to your email.' });
+  } catch (err) {
+    console.error('Forgot password error:', err);
+    return res.status(500).json({ error: 'Internal server error.' });
+  }
+}
+
+async function resetPassword(req, res) {
+  try {
+    const { token } = req.params;
+    const { password } = req.body;
+
+    if (!token) return res.status(400).json({ error: 'Reset token missing' });
+    if (!password) return res.status(400).json({ error: 'New password is required' });
+
+    let decoded;
+    try {
+      decoded = jwt.verify(token, JWT_SECRET);
+    } catch (err) {
+      return res.status(400).json({ error: 'Invalid or expired reset link' });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const updated = await updateUserPassword(decoded.userId, hashedPassword);
+    if (!updated) return res.status(404).json({ error: 'User not found' });
+
+    return res.json({ message: 'Password has been reset successfully' });
+  } catch (err) {
+    console.error('Reset password error:', err);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+}
+
+module.exports = {
+  register,
+  login,
+  forgotPassword,
+  resetPassword,
+};

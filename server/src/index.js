@@ -2,6 +2,7 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const pool = require('./db');
+const resumeRoutes = require('./routes/resumeRoutes');
 
 const app = express();
 app.use(cors());
@@ -17,6 +18,7 @@ app.get('/', (req, res) => {
 });
 
 app.use('/api/auth', authRoutes);
+app.use('/api/resume', resumeRoutes);
 
 app.get('/api/protected', authMiddleware, (req, res) => {
   res.json({

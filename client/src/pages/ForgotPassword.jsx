@@ -1,32 +1,21 @@
-import React, { useContext, useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import React, { useState } from "react";
+import { Link } from "react-router-dom";
 import API from "../api";
-import { AuthContext } from "../context/AuthContext";
 
-export default function Login() {
-  const [form, setForm] = useState({ email: "", password: "" });
+export default function ForgotPassword() {
+  const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
-  const navigate = useNavigate();
-  const { setUser } = useContext(AuthContext);
-
-  const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
     setMessage("");
+    setLoading(true);
     try {
-      const res = await API.post("/auth/login", form);
-      const token = res.data.token;
-      localStorage.setItem("token", token);
-      setUser(res.data.user);
-      setMessage("Login successful! Redirecting...");
-      setTimeout(() => navigate("/dashboard"), 1000);
+      const res = await API.post("/auth/forgot-password", { email });
+      setMessage("Password reset link sent to your email!");
     } catch (err) {
-      setMessage(err.response?.data?.error || "Invalid credentials. Try again.");
+      setMessage(err.response?.data?.error || "Failed to send reset link. Try again.");
     } finally {
       setLoading(false);
     }
@@ -39,45 +28,23 @@ export default function Login() {
 
       <div className="relative z-10 w-full max-w-md bg-white rounded-2xl shadow-2xl border border-slate-100 p-8">
         <h2 className="text-3xl font-extrabold text-gray-800 text-center mb-2">
-          Welcome Back User,
+          Forgot Password
         </h2>
         <p className="text-gray-500 text-center mb-6 text-sm">
-          Log in to continue to your{" "}
-          <span className="font-medium text-blue-600">AI Resume Evaluator</span>
+          Enter your registered email, and we’ll send you a link to reset your password.
         </p>
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-1">
-              Email
+              Email Address
             </label>
             <input
               type="email"
               name="email"
-              placeholder="Enter your email"
-              onChange={handleChange}
-              required
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-            />
-          </div>
-
-          <div>
-            <div className="flex items-center justify-between mb-1">
-              <label className="block text-sm font-semibold text-gray-700">
-                Password
-              </label>
-              <Link
-                to="/forgot-password"
-                className="text-xs text-blue-600 hover:underline font-medium"
-              >
-                Forgot Password?
-              </Link>
-            </div>
-            <input
-              type="password"
-              name="password"
-              placeholder="Enter your password"
-              onChange={handleChange}
+              placeholder="Enter your registered email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               required
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
             />
@@ -92,14 +59,14 @@ export default function Login() {
                 : "bg-blue-600 hover:bg-blue-700 shadow"
             }`}
           >
-            {loading ? "Logging in..." : "Login"}
+            {loading ? "Sending..." : "Send Reset Link"}
           </button>
         </form>
 
         {message && (
           <p
             className={`text-center text-sm mt-4 ${
-              message.startsWith("Login successful")
+              message.startsWith("Password reset link sent")
                 ? "text-green-600"
                 : "text-red-500"
             }`}
@@ -109,12 +76,12 @@ export default function Login() {
         )}
 
         <p className="text-center text-gray-500 text-sm mt-6">
-          Don’t have an account?{" "}
+          Remembered your password?{" "}
           <Link
-            to="/register"
+            to="/login"
             className="text-blue-600 hover:underline font-medium"
           >
-            Register here
+            Back to Login
           </Link>
         </p>
       </div>
