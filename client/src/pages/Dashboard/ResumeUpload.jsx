@@ -7,12 +7,13 @@ export default function ResumeUpload() {
   const [loading, setLoading] = useState(false);
   const [resumes, setResumes] = useState([]);
   const [selectedResume, setSelectedResume] = useState(null);
+  const [matchData, setMatchData] = useState(null);
+  const [matchLoading, setMatchLoading] = useState(false);
 
-  // Fetch all uploaded resumes
   useEffect(() => {
     async function fetchResumes() {
       try {
-        const res = await API.get('/resume/list');
+        const res = await API.get('/resume/history');
         setResumes(res.data);
       } catch (err) {
         console.error('Error fetching resumes:', err.response?.data || err.message);
@@ -25,6 +26,20 @@ export default function ResumeUpload() {
   const handleFileChange = (e) => {
     setFile(e.target.files[0]);
     setMessage('');
+  };
+
+  const fetchJobMatches = async (skills) => {
+    try {
+      setMatchLoading(true);
+
+      const res = await API.post('/get/job-matches', { skills });
+      setMatchData(res.data);
+    } catch (err) {
+      console.error('Job match error:', err);
+      setMatchData(null);
+    } finally {
+      setMatchLoading(false);
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -40,9 +55,14 @@ export default function ResumeUpload() {
       const res = await API.post('/resume/upload', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
+
       setMessage(res.data.message);
       setFile(null);
-      setSelectedResume(res.data); // show analysis of uploaded resume
+      setSelectedResume(res.data);
+
+      if (res.data.analysis?.skills) {
+        await fetchJobMatches(res.data.analysis.skills);
+      }
     } catch (err) {
       setMessage(err.response?.data?.error || 'Upload failed');
     } finally {
@@ -50,16 +70,18 @@ export default function ResumeUpload() {
     }
   };
 
-  // Handle selecting a resume from the list
-  const handleSelectResume = (resume) => {
+  const handleSelectResume = async (resume) => {
     setSelectedResume(resume);
+
+    if (resume.analysis_result?.skills) {
+      await fetchJobMatches(resume.analysis_result.skills);
+    }
   };
 
   return (
     <div className="max-w-5xl mx-auto p-6 space-y-6">
-      {/* Upload Section */}
       <div className="bg-white p-6 rounded-lg shadow-md">
-        <h2 className="text-2xl font-bold mb-4 text-center">📄 Upload Your Resume</h2>
+        <h2 className="text-2xl font-bold mb-4 text-center">Upload Your Resume</h2>
         <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row items-center gap-4">
           <input
             type="file"
@@ -79,9 +101,8 @@ export default function ResumeUpload() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {/* Resume List */}
         <div className="bg-white p-4 rounded-lg shadow-md overflow-y-auto max-h-[500px]">
-          <h3 className="text-lg font-semibold mb-4">🗂 Uploaded Resumes</h3>
+          <h3 className="text-lg font-semibold mb-4">Uploaded Resumes</h3>
           {resumes.length === 0 ? (
             <p className="text-gray-500 text-sm">No resumes uploaded yet.</p>
           ) : (
@@ -95,8 +116,7 @@ export default function ResumeUpload() {
                   onClick={() => handleSelectResume(r)}
                 >
                   <div className="flex justify-between items-center">
-                    <span className="text-sm font-semibold mb-1 sm:mb-0 truncate max-w-[70%]">{r.original_name}</span>
-                    <br></br>
+                    <span className="text-sm font-semibold truncate max-w-[70%]">{r.original_name}</span>
                     <span className="text-gray-400 text-xs">
                       {new Date(r.created_at).toLocaleString()}
                     </span>
@@ -107,70 +127,50 @@ export default function ResumeUpload() {
           )}
         </div>
 
-        {/* Analysis Display */}
         <div className="md:col-span-2 bg-white p-6 rounded-lg shadow-md overflow-y-auto max-h-[500px]">
           {selectedResume ? (
             <>
               <h3 className="text-xl font-semibold mb-4">🧠 Analysis for {selectedResume.original_name}</h3>
               {selectedResume.analysis_result ? (
                 <div className="space-y-4 text-gray-700">
-                  {/* Skills */}
                   <div>
                     <h4 className="font-semibold">Skills:</h4>
                     <p>{selectedResume.analysis_result.skills?.join(', ') || 'N/A'}</p>
                   </div>
 
-                  {/* Experience */}
-                  {selectedResume.analysis_result.experience?.length > 0 && (
-                    <div>
-                      <h4 className="font-semibold">Experience:</h4>
-                      <ul className="list-disc ml-6 space-y-2">
-                        {selectedResume.analysis_result.experience.map((exp, i) => (
-                          <li key={i}>
-                            <span className="font-semibold">{exp.Title}</span> at {exp.Company} ({exp.Dates})
-                            <p className="ml-2 text-gray-600">{exp.Description}</p>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
+                  {/* Jobs Match Section */}
+                  <div className="mt-6">
+                    <h3 className="text-xl font-semibold mb-3">🎯 Best Job Matches</h3>
+                    {matchLoading ? (
+                      <p className="text-gray-500">Finding best jobs...</p>
+                    ) : matchData?.data?.length ? (
+                      <>
+                        <ul className="space-y-2">
+                          {matchData.data.map((job, i) => (
+                            <li key={i} className="p-3 bg-gray-50 rounded border">
+                              <p className="font-semibold">{job.title}</p>
+                              <p className="text-sm text-gray-600">Match Score: <b>{job.match_score}%</b></p>
+                            </li>
+                          ))}
+                        </ul>
 
-                  {/* Education */}
-                  {selectedResume.analysis_result.education?.length > 0 && (
-                    <div>
-                      <h4 className="font-semibold">Education:</h4>
-                      <ul className="list-disc ml-6 space-y-1">
-                        {selectedResume.analysis_result.education.map((edu, i) => (
-                          <li key={i}>
-                            <span className="font-semibold">{edu.Degree}</span> from {edu.Institution} ({edu.Dates})
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
+                        <h4 className="font-semibold mt-3">🧠 AI Reasoning:</h4>
+                        <pre className="bg-gray-100 p-2 rounded text-sm overflow-auto">
+                          {JSON.stringify(matchData.reasoning, null, 2)}
+                        </pre>
+                      </>
+                    ) : (
+                      <p className="text-gray-500">No job matches found.</p>
+                    )}
+                  </div>
 
-                  {/* Projects */}
-                  {selectedResume.analysis_result.project_highlights?.length > 0 && (
-                    <div>
-                      <h4 className="font-semibold">Project Highlights:</h4>
-                      <ul className="list-disc ml-6 space-y-2">
-                        {selectedResume.analysis_result.project_highlights.map((proj, i) => (
-                          <li key={i}>
-                            <span className="font-semibold">{proj.ProjectName}</span> —{' '}
-                            <span className="text-gray-600">{proj.Technologies}</span>
-                            <p className="ml-2 text-gray-600">{proj.Description}</p>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
                 </div>
               ) : (
-                <p className="text-gray-500">No analysis available for this resume.</p>
+                <p className="text-gray-500">No analysis available.</p>
               )}
             </>
           ) : (
-            <p className="text-gray-500 text-center mt-20">Select a resume to view its analysis</p>
+            <p className="text-gray-500 text-center mt-20">Select a resume to view analysis & matches</p>
           )}
         </div>
       </div>

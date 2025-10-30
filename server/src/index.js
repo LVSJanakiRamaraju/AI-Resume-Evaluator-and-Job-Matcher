@@ -4,6 +4,7 @@ import cors from 'cors';
 import pool from './db.js';
 import resumeRoutes from './routes/resumeRoutes.js';
 import authRoutes from './routes/auth.js';
+import matchJobRoutes from './routes/matchJobRoutes.js';
 import authMiddleware from './middleware/authMiddleware.js';
 
 const app = express();
@@ -18,6 +19,7 @@ app.get('/', (req, res) => {
 
 app.use('/api/auth', authRoutes);
 app.use('/api/resume', resumeRoutes);
+app.use("/api/get", matchJobRoutes);
 
 app.get('/api/protected', authMiddleware, (req, res) => {
   res.json({

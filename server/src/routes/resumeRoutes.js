@@ -92,7 +92,7 @@ router.post('/upload', authMiddleware, upload.single('resume'), async (req, res)
   }
 });
 
-router.get('/list', authMiddleware, async (req, res) => {
+router.get('/history', authMiddleware, async (req, res) => {
   try {
     const result = await pool.query(
       `SELECT id, original_name, file_url, created_at, analysis_result
