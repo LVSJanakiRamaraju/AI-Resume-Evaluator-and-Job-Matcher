@@ -1,17 +1,16 @@
-require('dotenv').config();
-const express = require('express');
-const cors = require('cors');
-const pool = require('./db');
-const resumeRoutes = require('./routes/resumeRoutes');
+import 'dotenv/config';
+import express from 'express';
+import cors from 'cors';
+import pool from './db.js';
+import resumeRoutes from './routes/resumeRoutes.js';
+import authRoutes from './routes/auth.js';
+import authMiddleware from './middleware/authMiddleware.js';
 
 const app = express();
+const PORT = process.env.PORT || 5000;
+
 app.use(cors());
 app.use(express.json());
-
-const authRoutes = require('./routes/auth');
-const authMiddleware = require('./middleware/authMiddleware');
-
-const PORT = process.env.PORT || 5000;
 
 app.get('/', (req, res) => {
   res.json({ status: 'ok', message: 'AI Resume Evaluator backend running' });
@@ -31,7 +30,6 @@ app.get('/api/protected', authMiddleware, (req, res) => {
     },
   });
 });
-
 
 app.get('/api/db-test', async (req, res) => {
   try {

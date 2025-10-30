@@ -1,19 +1,18 @@
-// utils/emailService.js
-const nodemailer = require("nodemailer");
+import nodemailer from 'nodemailer';
 
 const transporter = nodemailer.createTransport({
-  service: "gmail",
+  service: 'gmail',
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS,
   },
 });
 
-async function sendResetPasswordEmail(to, name, link) {
+export async function sendResetPasswordEmail(to, name, link) {
   const mailOptions = {
     from: `"AI Resume Evaluator" <${process.env.EMAIL_USER}>`,
     to,
-    subject: "Reset Your Password - AI Resume Evaluator",
+    subject: 'Reset Your Password - AI Resume Evaluator',
     html: `
       <div style="font-family: Arial, sans-serif; padding: 20px; background: #f5f5f5;">
         <div style="max-width: 600px; margin: auto; background: white; border-radius: 10px; padding: 25px;">
@@ -45,9 +44,7 @@ async function sendResetPasswordEmail(to, name, link) {
     await transporter.sendMail(mailOptions);
     console.log(`Reset email sent to ${to}`);
   } catch (err) {
-    console.error("Email send failed:", err);
-    throw new Error("Failed to send reset email");
+    console.error('Email send failed:', err);
+    throw new Error('Failed to send reset email');
   }
 }
-
-module.exports = { sendResetPasswordEmail };

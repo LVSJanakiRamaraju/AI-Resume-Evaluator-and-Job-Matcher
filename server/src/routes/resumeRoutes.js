@@ -1,61 +1,111 @@
-const express = require('express')
-const router = express.Router()
-const multer = require('multer')
-const path = require('path')
-const fs = require('fs')
-const pool = require('../db')
-const authMiddleware = require('../middleware/authMiddleware')
+import express from 'express';
+import multer from 'multer';
+import pool from '../db.js';
+import authMiddleware from '../middleware/authMiddleware.js';
+import { analyzeResume } from '../services/geminiService.js';
+import { fileURLToPath } from 'url';
+import path, { dirname } from 'path';
+import fs from 'fs';
+import pdfjsLib from 'pdfjs-dist/legacy/build/pdf.js';
+import { v2 as cloudinary } from 'cloudinary';
 
-const uploadDir = path.join(__dirname, '../../uploads')
-if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir)
+pdfjsLib.GlobalWorkerOptions.workerSrc = null;
+
+const router = express.Router();
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET
+});
 
 const storage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, uploadDir),
-  filename: (req, file, cb) => {
-    const uniqueName = `${Date.now()}-${file.originalname}`
-    cb(null, uniqueName)
-  }
-})
+  destination: (req, file, cb) => cb(null, path.join(__dirname, '../../temp')),
+  filename: (req, file, cb) => cb(null, `${Date.now()}-${file.originalname}`)
+});
+if (!fs.existsSync(path.join(__dirname, '../../temp'))) fs.mkdirSync(path.join(__dirname, '../../temp'));
 
 const upload = multer({
   storage,
   fileFilter: (req, file, cb) => {
-    if (file.mimetype === 'application/pdf') cb(null, true)
-    else cb(new Error('Only PDF files allowed!'))
+    file.mimetype === 'application/pdf'
+      ? cb(null, true)
+      : cb(new Error('Only PDF files allowed!'));
   }
-})
+});
+
+async function extractTextFromPDF(filePath) {
+  try {
+    const data = new Uint8Array(fs.readFileSync(filePath));
+    const loadingTask = pdfjsLib.getDocument({ data, useWorkerFetch: false, isEvalSupported: false });
+    const pdf = await loadingTask.promise;
+    let text = "";
+    for (let i = 1; i <= pdf.numPages; i++) {
+      const page = await pdf.getPage(i);
+      const content = await page.getTextContent();
+      text += content.items.map(item => item.str).join(" ") + "\n";
+    }
+    return text.trim();
+  } catch (err) {
+    console.error("PDF extraction failed:", err);
+    return "";
+  }
+}
 
 router.post('/upload', authMiddleware, upload.single('resume'), async (req, res) => {
   try {
-    const userId = req.user.id
-    const { filename, originalname } = req.file
+    if (!req.file) throw new Error('No file uploaded');
+
+    const userId = req.user.id;
+    const localFilePath = req.file.path;
+    const originalName = req.file.originalname;
+
+
+    const extractedText = await extractTextFromPDF(localFilePath);
+
+    const analysis = extractedText ? await analyzeResume(extractedText) : { error: 'Could not extract text' };
+
+    const cloudRes = await cloudinary.uploader.upload(localFilePath, {
+      folder: 'resumes',
+      resource_type: 'raw'
+    });
 
     await pool.query(
-      'INSERT INTO resumes (user_id, filename, original_name) VALUES ($1, $2, $3)',
-      [userId, filename, originalname]
-    )
+      `INSERT INTO resumes (user_id, original_name, file_url, extracted_text, analysis_result, created_at)
+       VALUES ($1, $2, $3, $4, $5, NOW())`,
+      [userId, originalName, cloudRes.secure_url, extractedText, JSON.stringify(analysis)]
+    );
 
+    fs.unlinkSync(localFilePath);
     res.json({
       success: true,
-      message: 'Resume uploaded successfully!',
-      file: filename
-    })
+      message: 'Resume uploaded and analyzed successfully',
+      file_url: cloudRes.secure_url,
+      original_name: originalName,
+      analysis
+    });
   } catch (err) {
-    console.error('Upload error:', err)
-    res.status(500).json({ error: 'Server error during upload' })
+    console.error('Upload error:', err);
+    res.status(500).json({ error: 'Server error during upload' });
   }
-})
+});
 
 router.get('/list', authMiddleware, async (req, res) => {
   try {
     const result = await pool.query(
-      'SELECT id, original_name, uploaded_at FROM resumes WHERE user_id = $1 ORDER BY uploaded_at DESC',
+      `SELECT id, original_name, file_url, created_at, analysis_result
+       FROM resumes
+       WHERE user_id = $1
+       ORDER BY created_at DESC`,
       [req.user.id]
-    )
-    res.json(result.rows)
+    );
+    res.json(result.rows);
   } catch (err) {
-    res.status(500).json({ error: 'Could not fetch resumes' })
+    console.error('List error:', err);
+    res.status(500).json({ error: 'Could not fetch resumes' });
   }
-})
+});
 
-module.exports = router
+export default router;

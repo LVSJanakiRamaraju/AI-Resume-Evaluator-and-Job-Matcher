@@ -1,10 +1,10 @@
-require('dotenv').config();
-const jwt = require('jsonwebtoken');
-const { getUserById } = require('../models/userModel');
+import 'dotenv/config';
+import jwt from 'jsonwebtoken';
+import { getUserById } from '../models/userModel.js';
 
 const JWT_SECRET = process.env.JWT_SECRET;
 
-async function authMiddleware(req, res, next) {
+export default async function authMiddleware(req, res, next) {
   try {
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -24,5 +24,3 @@ async function authMiddleware(req, res, next) {
     return res.status(401).json({ error: 'Unauthorized' });
   }
 }
-
-module.exports = authMiddleware;

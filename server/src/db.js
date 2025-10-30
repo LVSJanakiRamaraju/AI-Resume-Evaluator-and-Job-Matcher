@@ -1,5 +1,9 @@
-require('dotenv').config();
-const { Pool } = require('pg');
+import 'dotenv/config';
+import pkg from 'pg';
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+
+const { Pool } = pkg;
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
@@ -14,8 +18,9 @@ async function testConnection() {
   }
 }
 
-if (require.main === module) {
+const __filename = fileURLToPath(import.meta.url);
+if (process.argv[1] === __filename) {
   testConnection();
 }
 
-module.exports = pool;
+export default pool;

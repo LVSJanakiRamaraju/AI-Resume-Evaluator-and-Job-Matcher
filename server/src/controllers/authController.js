@@ -1,14 +1,14 @@
-require('dotenv').config();
-const bcrypt = require('bcrypt');
-const jwt = require('jsonwebtoken');
-const { createUser, getUserByEmail, updateUserPassword } = require('../models/userModel');
-const { sendResetPasswordEmail } = require('../utils/emailService');
+import 'dotenv/config';
+import bcrypt from 'bcrypt';
+import jwt from 'jsonwebtoken';
+import { createUser, getUserByEmail, updateUserPassword } from '../models/userModel.js';
+import { sendResetPasswordEmail } from '../utils/mail.js';
 
 const JWT_SECRET = process.env.JWT_SECRET;
 const JWT_EXPIRES = '1d';
 const RESET_TOKEN_EXPIRES = '5m';
 
-async function register(req, res) {
+export async function register(req, res) {
   try {
     const { name, email, password } = req.body;
     if (!name || !email || !password) {
@@ -21,7 +21,6 @@ async function register(req, res) {
     }
 
     const passwordHash = await bcrypt.hash(password, 10);
-
     const user = await createUser({ name, email, passwordHash });
     return res.status(201).json({ user });
   } catch (err) {
@@ -30,7 +29,7 @@ async function register(req, res) {
   }
 }
 
-async function login(req, res) {
+export async function login(req, res) {
   try {
     const { email, password } = req.body;
     if (!email || !password) {
@@ -61,7 +60,7 @@ async function login(req, res) {
   }
 }
 
-async function forgotPassword(req, res) {
+export async function forgotPassword(req, res) {
   try {
     const { email } = req.body;
     if (!email) return res.status(400).json({ error: 'Email is required' });
@@ -81,7 +80,7 @@ async function forgotPassword(req, res) {
   }
 }
 
-async function resetPassword(req, res) {
+export async function resetPassword(req, res) {
   try {
     const { token } = req.params;
     const { password } = req.body;
@@ -106,10 +105,3 @@ async function resetPassword(req, res) {
     return res.status(500).json({ error: 'Internal server error' });
   }
 }
-
-module.exports = {
-  register,
-  login,
-  forgotPassword,
-  resetPassword,
-};

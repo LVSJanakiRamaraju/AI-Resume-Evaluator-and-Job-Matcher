@@ -1,6 +1,6 @@
-const pool = require('../db');
+import pool from '../db.js';
 
-async function createUser({ name, email, passwordHash, role = 'user' }) {
+export async function createUser({ name, email, passwordHash, role = 'user' }) {
   const query = `
     INSERT INTO users (name, email, password_hash, role)
     VALUES ($1, $2, $3, $4)
@@ -11,17 +11,20 @@ async function createUser({ name, email, passwordHash, role = 'user' }) {
   return res.rows[0];
 }
 
-async function getUserByEmail(email) {
+export async function getUserByEmail(email) {
   const res = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
   return res.rows[0] || null;
 }
 
-async function getUserById(id) {
-  const res = await pool.query('SELECT id, name, email, role, created_at FROM users WHERE id = $1', [id]);
+export async function getUserById(id) {
+  const res = await pool.query(
+    'SELECT id, name, email, role, created_at FROM users WHERE id = $1',
+    [id]
+  );
   return res.rows[0] || null;
 }
 
-async function updateUserPassword(id, newPasswordHash) {
+export async function updateUserPassword(id, newPasswordHash) {
   const query = `
     UPDATE users
     SET password_hash = $1
@@ -32,10 +35,3 @@ async function updateUserPassword(id, newPasswordHash) {
   const res = await pool.query(query, values);
   return res.rows[0];
 }
-
-module.exports = {
-  createUser,
-  getUserByEmail,
-  getUserById,
-  updateUserPassword,
-};
