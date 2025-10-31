@@ -14,13 +14,19 @@ export default function ResumeUpload({ setActiveTab }) {
       try {
         const res = await API.get('/resume/history');
         setResumes(res.data);
+
+        if (!selectedResume && res.data.length > 0) {
+          const latestResume = res.data[0];
+          setSelectedResume(latestResume);
+          localStorage.setItem('selectedResume', JSON.stringify(latestResume));
+        }
       } catch (err) {
         console.error('Error fetching resumes:', err.response?.data || err.message);
         setResumes([]);
       }
     }
     fetchResumes();
-  }, [message]);
+  }, [selectedResume]);
 
   const handleFileChange = (e) => {
     setFile(e.target.files[0]);
@@ -41,9 +47,15 @@ export default function ResumeUpload({ setActiveTab }) {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
 
-      setMessage(res.data.message);
+      const uploadedResume = res.data;
+      setMessage('Upload successful');
       setFile(null);
-      setSelectedResume(res.data);
+
+      setSelectedResume(uploadedResume);
+      localStorage.setItem('selectedResume', JSON.stringify(uploadedResume));
+
+      setResumes(prev => [uploadedResume, ...prev]);
+
     } catch (err) {
       setMessage(err.response?.data?.error || 'Upload failed');
     } finally {
@@ -53,6 +65,7 @@ export default function ResumeUpload({ setActiveTab }) {
 
   const handleSelectResume = (resume) => {
     setSelectedResume(resume);
+    localStorage.setItem("selectedResume", JSON.stringify(resume));
   };
 
   return (

@@ -28,21 +28,21 @@ export default function JobMatches() {
   useEffect(() => {
     async function fetchMatches() {
       if (!selectedResume?.id) return;
-    try {
-      setLoadingMatches(true);
-      const res = await API.post("/get/job-matches", {
-        resume_id: selectedResume.id
-      });
-      setMatchData(res.data);
-    } catch (err) {
-      console.error("Match error:", err);
-      setMatchData(null);
-    } finally {
-      setLoadingMatches(false);
+      try {
+        setLoadingMatches(true);
+        const res = await API.post("/get/job-matches", {
+          resume_id: selectedResume.id
+        });
+        setMatchData(res.data);
+      } catch (err) {
+        console.error("Match error:", err);
+        setMatchData(null);
+      } finally {
+        setLoadingMatches(false);
+      }
     }
-  }
-  fetchMatches();
-}, [selectedResume]);
+    fetchMatches();
+  }, [selectedResume]);
 
   const handleSelectResume = (resume) => {
     setSelectedResume(resume);
@@ -51,7 +51,6 @@ export default function JobMatches() {
 
   return (
     <div className="max-w-6xl mx-auto p-6 grid grid-cols-1 md:grid-cols-3 gap-6">
-
       <div className="bg-white p-4 rounded-lg shadow-md overflow-y-auto max-h-[600px]">
         <h3 className="text-lg font-semibold mb-4">Uploaded Resumes</h3>
         {loadingResumes ? (
@@ -92,15 +91,15 @@ export default function JobMatches() {
         ) : matchData?.data?.length ? (
           <>
             <h2 className="text-xl font-semibold mb-4">
-               Job Matches for {selectedResume.original_name}
+              Job Matches for {selectedResume.original_name}
             </h2>
 
             <div className="space-y-4">
               {matchData.data.map((job, i) => {
-                console.log(matchData.reasoning)
-                const reasoning = matchData.reasoning?.[i + 1]?.reasoning;
-                const fit_skills = matchData.reasoning?.[i + 1]?.fit_skills || [];
-                const missing_skills = matchData.reasoning?.[i + 1]?.missing_skills || [];
+                const reasoning = job.reasoning.reasoning || "";
+                const fit_skills = job.reasoning.fit_skills || [];
+                const missing_skills = job.reasoning.missing_skills || [];
+
                 return (
                   <div key={i} className="border rounded-lg p-4 shadow-sm hover:shadow-md transition">
                     <div className="flex justify-between items-center mb-2">
@@ -115,23 +114,31 @@ export default function JobMatches() {
                       ></div>
                     </div>
 
-                    {reasoning && (
+                    {(reasoning && fit_skills.length > 0 && missing_skills.length > 0) && (
                       <div className="text-gray-700 text-sm mt-2 space-y-1">
-                        <p><span className="font-semibold">Reasoning:</span> {reasoning}</p>
+                        {reasoning && (
+                          <p>
+                            <span className="font-semibold">Reasoning:</span> {reasoning}
+                          </p>
+                        )}
                         {fit_skills.length > 0 && (
-                          <p><span className="font-semibold">Fit Skills:</span> {fit_skills.join(", ")}</p>
+                          <p>
+                            <span className="font-semibold">Fit Skills:</span> {fit_skills.join(", ")}
+                          </p>
                         )}
                         {missing_skills.length > 0 && (
-                          <p><span className="font-semibold">Missing Skills:</span> {missing_skills.join(", ")}</p>
+                          <p>
+                            <span className="font-semibold">Missing Skills:</span> {missing_skills.join(", ")}
+                          </p>
                         )}
                         <a
                           href="https://huggingface.co/spaces/RamaRaju18/Learning_Pat_Generator"
                           target="_blank"
+                          rel="noopener noreferrer"
                           className="text-blue-600 underline"
                         >
                           Learn missing skills
                         </a>
-
                       </div>
                     )}
                   </div>

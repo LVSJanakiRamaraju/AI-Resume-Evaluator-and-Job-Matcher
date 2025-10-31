@@ -6,14 +6,26 @@ import Profile from './Profile'
 import { AuthContext } from '../../context/AuthContext'
 
 export default function Dashboard() {
-  const [activeTab, setActiveTab] = useState('resume')
+  const [activeTab, setActiveTab] = useState(() => {
+    return localStorage.getItem("activeTab") || "resume";
+  });
+
   const navigate = useNavigate()
   const { user, logout } = useContext(AuthContext)
 
   const handleLogout = () => {
-    logout()
-    navigate('/login')
-  }
+    localStorage.removeItem("activeTab");
+    localStorage.removeItem("selectedResume");
+    logout();
+    navigate('/login');
+  };
+
+
+  const handleTabChange = (tab) => {
+    setActiveTab(tab);
+    localStorage.setItem("activeTab", tab);
+  };
+
 
   const renderContent = () => {
     switch (activeTab) {
@@ -38,9 +50,9 @@ export default function Dashboard() {
       </header>
 
       <nav className="bg-white shadow-md flex justify-center space-x-6 p-3">
-        <button onClick={() => setActiveTab('resume')} className={`${activeTab === 'resume' ? 'text-blue-600 font-semibold' : 'text-gray-600'}`}>Resume Upload</button>
-        <button onClick={() => setActiveTab('jobs')} className={`${activeTab === 'jobs' ? 'text-blue-600 font-semibold' : 'text-gray-600'}`}>Job Matches</button>
-        <button onClick={() => setActiveTab('profile')} className={`${activeTab === 'profile' ? 'text-blue-600 font-semibold' : 'text-gray-600'}`}>Profile</button>
+        <button onClick={() => handleTabChange('resume')} className={`${activeTab === 'resume' ? 'text-blue-600 font-semibold' : 'text-gray-600'}`}>Resume Upload</button>
+        <button onClick={() => handleTabChange('jobs')} className={`${activeTab === 'jobs' ? 'text-blue-600 font-semibold' : 'text-gray-600'}`}>Job Matches</button>
+        <button onClick={() => handleTabChange('profile')} className={`${activeTab === 'profile' ? 'text-blue-600 font-semibold' : 'text-gray-600'}`}>Profile</button>
       </nav>
 
       <main className="flex-1 p-6 overflow-y-auto bg-gray-50">

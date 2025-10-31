@@ -96,6 +96,12 @@ router.post("/job-matches", authMiddleware, async (req, res) => {
     if (!resume_id) {
       return res.status(400).json({ success: false, error: "resume_id is required." });
     }
+    
+    const REASONING_FALLBACK = { 
+      reasoning: "Analysis not available or failed.", 
+      fit_skills: [], 
+      missing_skills: [] 
+    };
 
     const existingMatches = await pool.query(
       `SELECT m.job_id, m.match_score, m.reasoning, j.title 
@@ -107,15 +113,13 @@ router.post("/job-matches", authMiddleware, async (req, res) => {
     );
 
     if (existingMatches.rows.length > 0) {
-      console.log("Returning cached job matches");
-
       return res.json({
         success: true,
         data: existingMatches.rows.map(r => ({
           job_id: r.job_id,
           title: r.title,
           match_score: r.match_score,
-          ...JSON.parse(r.reasoning)
+          reasoning: r.reasoning
         }))
       });
     }
@@ -157,13 +161,14 @@ router.post("/job-matches", authMiddleware, async (req, res) => {
     const topJobs = results.sort((a, b) => b.match_score - a.match_score).slice(0, 10);
 
     const prompt = `
-Candidate Skills: [${skills.join(", ")}]
+      Candidate Skills: [${skills.join(", ")}]
 
-Jobs to analyze:
-${JSON.stringify(topJobs)}
+      Jobs to analyze:
+      ${JSON.stringify(topJobs)}
 
-Respond ONLY as JSON format:
-{ job_id:{ reasoning, fit_skills, missing_skills } }
+      For each job ID, provide a brief reasoning, a list of matching skills (fit_skills), and a list of missing skills (missing_skills).
+      Respond ONLY as JSON format:
+      { job_id:{ reasoning, fit_skills, missing_skills } }
     `;
 
     const payload = {
@@ -186,6 +191,8 @@ Respond ONLY as JSON format:
     }
 
     for (const job of topJobs) {
+      const jobReasoning = reasoning[job.job_id] || REASONING_FALLBACK;
+      
       await pool.query(
         `INSERT INTO matches (resume_id, job_id, match_score, reasoning, created_at)
          VALUES ($1, $2, $3, $4, NOW())`,
@@ -193,16 +200,15 @@ Respond ONLY as JSON format:
           resume_id,
           job.job_id,
           job.match_score,
-          JSON.stringify(reasoning[job.job_id])
+          JSON.stringify(jobReasoning)
         ]
       );
     }
-
     return res.json({
       success: true,
       data: topJobs.map(job => ({
         ...job,
-        ...reasoning[job.job_id]
+        ...(reasoning[job.job_id] || REASONING_FALLBACK)
       }))
     });
 
