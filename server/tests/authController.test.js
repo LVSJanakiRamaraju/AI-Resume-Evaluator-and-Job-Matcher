@@ -53,7 +53,7 @@ describe('authController.register', () => {
     const { getUserByEmail } = await import('../src/models/userModel.js');
     getUserByEmail.mockResolvedValue({ id: 1, email: 'used@used.com' });
 
-    const req = { body: { name: 'used', email: 'used@used.com', password: 'password12!' } };
+    const req = { body: { name: 'used', email: 'used@used.com', password: 'password123' } };
     const res = mockRes();
     await register(req, res);
     expect(res.status).toHaveBeenCalledWith(409);
@@ -185,4 +185,9 @@ describe('authController.resetPassword', () => {
     await resetPassword(req, res);
     expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ message: expect.any(String) }));
   });
+});
+
+afterAll(() => {
+  jest.resetModules();
+  jest.restoreAllMocks();
 });
