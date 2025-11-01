@@ -3,6 +3,8 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import Register from '../pages/Register';
 
+vi.mock('../api', () => ({ default: { post: vi.fn() } }));
+
 test('renders register form and shows validation errors', async () => {
   render(
     <MemoryRouter>
@@ -11,22 +13,18 @@ test('renders register form and shows validation errors', async () => {
   );
 
   const submit = screen.getByRole('button', { name: /register/i });
-  // fill invalid values so validation triggers deterministically
   const nameInput = screen.getByPlaceholderText(/enter your name/i);
   const emailInput = screen.getByPlaceholderText(/enter your email/i);
   const pwInput = screen.getByPlaceholderText(/create a password/i);
 
-  fireEvent.change(nameInput, { target: { value: 'ab' } }); // too short
-  // set a non-empty but invalid email so HTML5 "required" doesn't block submit in jsdom
+  fireEvent.change(nameInput, { target: { value: 'ab' } }); 
   fireEvent.change(emailInput, { target: { value: 'invalid' } });
-  fireEvent.change(pwInput, { target: { value: '123' } }); // too short
+  fireEvent.change(pwInput, { target: { value: '123' } });
 
-  // disable HTML5 validation in jsdom so React onSubmit runs and our custom validators execute
   const formEl = submit.closest('form');
   if (formEl) formEl.noValidate = true;
   fireEvent.click(submit);
 
-  // password error should appear (message can vary)
   expect(await screen.findByText(/Password must/i)).toBeInTheDocument();
 });
 
@@ -42,4 +40,35 @@ test('password toggle works', async () => {
   expect(pwInput).toHaveAttribute('type', 'password');
   fireEvent.click(toggle);
   expect(pwInput).toHaveAttribute('type', 'text');
+});
+
+test('submits valid form and shows success message', async () => {
+  const { default: API } = await import('../api');
+  API.post.mockResolvedValueOnce({ data: { success: true } });
+
+  render(
+    <MemoryRouter>
+      <Register />
+    </MemoryRouter>
+  );
+
+  const nameInput = screen.getByPlaceholderText(/enter your name/i);
+  const emailInput = screen.getByPlaceholderText(/enter your email/i);
+  const pwInput = screen.getByPlaceholderText(/create a password/i);
+  const submit = screen.getByRole('button', { name: /register/i });
+
+  fireEvent.change(nameInput, { target: { value: 'Alice User' } });
+  fireEvent.change(emailInput, { target: { value: 'alice@example.com' } });
+  fireEvent.change(pwInput, { target: { value: 'Password123' } });
+
+  const formEl = submit.closest('form');
+  if (formEl) formEl.noValidate = true;
+  fireEvent.click(submit);
+
+  expect(await screen.findByText(/Registration successful!/i)).toBeInTheDocument();
+  expect(API.post).toHaveBeenCalledWith('/auth/register', {
+    name: 'Alice User',
+    email: 'alice@example.com',
+    password: 'Password123'
+  });
 });

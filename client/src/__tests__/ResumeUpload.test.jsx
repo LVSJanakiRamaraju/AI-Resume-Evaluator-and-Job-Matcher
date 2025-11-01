@@ -29,3 +29,25 @@ test('shows error for non-pdf file', async () => {
 
   expect(await screen.findByText(/Only PDF files allowed/i)).toBeInTheDocument();
 });
+
+test('uploads a pdf and updates context on success', async () => {
+  const ctx = { selectedResume: null, setSelectedResume: vi.fn() };
+  const { default: API } = await import('../api');
+  API.post.mockResolvedValueOnce({ data: { id: 2, original_name: 'resume.pdf', analysis_result: {} } });
+
+  render(
+    <ResumeContext.Provider value={ctx}>
+      <ResumeUpload setActiveTab={() => {}} />
+    </ResumeContext.Provider>
+  );
+
+  const fileInput = document.querySelector('input[type="file"]');
+  const pdf = new File(['%PDF-1.4'], 'resume.pdf', { type: 'application/pdf' });
+  fireEvent.change(fileInput, { target: { files: [pdf] } });
+
+  const upload = screen.getByRole('button', { name: /upload/i });
+  fireEvent.click(upload);
+
+  expect(await screen.findByText(/Upload successful/i)).toBeInTheDocument();
+  expect(ctx.setSelectedResume).toHaveBeenCalled();
+});

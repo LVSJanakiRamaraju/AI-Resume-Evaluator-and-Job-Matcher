@@ -16,7 +16,19 @@ export default function Profile() {
     fetchUser()
   }, [])
 
-  if (!user) return <p className="text-center">Loading profile...</p>
+    if (!user)
+      return (
+        <div className="flex flex-col items-center justify-center mt-16">
+          <p className="text-gray-700 font-medium text-lg mb-2">Loading...</p>
+          <div className="w-12 h-12 border-4 border-gray-300 border-t-blue-500 rounded-full animate-spin"></div>
+          <p className="text-gray-700 mt-4 font-medium animate-pulse">
+            Processing your Profile, please wait...
+          </p>
+          <span className="text-xs text-gray-400 mt-1">
+            This may take a few seconds...
+          </span>
+        </div>
+      );
 
   return (
     <div className="max-w-md mx-auto bg-white p-6 rounded-lg shadow-md">

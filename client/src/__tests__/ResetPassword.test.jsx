@@ -3,7 +3,8 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import ResetPassword from '../pages/ResetPassword';
 
-// Provide a token param by rendering inside MemoryRouter with initialEntries
+vi.mock('../api', () => ({ default: { post: vi.fn() } }));
+
 function renderWithToken() {
   return render(
     <MemoryRouter initialEntries={["/reset-password/token123"]}>
@@ -34,4 +35,24 @@ test('password toggles work', async () => {
   expect(pwInput).toHaveAttribute('type', 'password');
   fireEvent.click(toggle);
   expect(pwInput).toHaveAttribute('type', 'text');
+});
+
+test('successful reset shows message', async () => {
+  const { default: API } = await import('../api');
+  API.post.mockResolvedValueOnce({ data: { success: true } });
+
+  renderWithToken();
+
+  const pw = screen.getByPlaceholderText(/enter new password/i);
+  const cpw = screen.getByPlaceholderText(/confirm new password/i);
+  fireEvent.change(pw, { target: { value: 'Password123' } });
+  fireEvent.change(cpw, { target: { value: 'Password123' } });
+
+  const submit = screen.getByRole('button', { name: /reset password/i });
+  const form = submit.closest('form');
+  if (form) form.noValidate = true;
+  fireEvent.click(submit);
+
+  expect(await screen.findByText(/Password reset successful!/i)).toBeInTheDocument();
+  expect(API.post).toHaveBeenCalled();
 });
