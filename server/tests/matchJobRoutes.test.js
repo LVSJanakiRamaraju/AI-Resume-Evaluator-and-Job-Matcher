@@ -69,6 +69,40 @@ test('happy path matches jobs and returns data', async () => {
   expect(res.body.data[0]).toHaveProperty('job_id', 1);
 });
 
+test('retries on 429 and succeeds', async () => {
+  const { default: app } = await import('../src/app.js');
+  const { default: pool } = await import('../src/db.js');
+
+  pool.query.mockResolvedValueOnce({ rows: [] });
+  pool.query.mockResolvedValueOnce({ rows: [{ analysis_result: { skills: ['node'] } }] });
+  pool.query.mockResolvedValueOnce({ rows: [{ id: 1, title: 'J1', skills_required: 'node' }] });
+  pool.query.mockResolvedValue({ rows: [] });
+
+  const aiJson = JSON.stringify({ 1: { reasoning: 'ok', fit_skills: ['node'], missing_skills: [] } });
+  global.fetch.mockResolvedValueOnce({ ok: false, status: 429, statusText: 'Too Many Requests' })
+               .mockResolvedValueOnce({ ok: true, json: async () => ({ candidates: [{ content: { parts: [{ text: aiJson }] } }] }) });
+
+  const request = (await import('supertest')).default;
+  const res = await request(app).post('/api/get/job-matches').set('Authorization', 'Bearer token').send({ resume_id: 10 });
+  expect(res.status).toBe(200);
+  expect(global.fetch.mock.calls.length).toBeGreaterThanOrEqual(2);
+});
+
+test('returns 500 when AI returns invalid JSON', async () => {
+  const { default: app } = await import('../src/app.js');
+  const { default: pool } = await import('../src/db.js');
+
+  pool.query.mockResolvedValueOnce({ rows: [] });
+  pool.query.mockResolvedValueOnce({ rows: [{ analysis_result: { skills: ['node'] } }] });
+  pool.query.mockResolvedValueOnce({ rows: [{ id: 1, title: 'J1', skills_required: 'node' }] });
+
+  global.fetch.mockResolvedValueOnce({ ok: true, json: async () => ({ candidates: [{ content: { parts: [{ text: 'not valid json' }] } }] }) });
+
+  const request = (await import('supertest')).default;
+  const res = await request(app).post('/api/get/job-matches').set('Authorization', 'Bearer token').send({ resume_id: 11 });
+  expect(res.status).toBe(500);
+});
+
   afterAll(() => {
     try { delete global.fetch; } catch (e) {}
     jest.resetModules();
