@@ -64,6 +64,7 @@ export default function Register() {
               type="text"
               name="name"
               placeholder="Enter your name"
+              value={form.name}
               onChange={handleChange}
               required
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
@@ -81,6 +82,7 @@ export default function Register() {
               type="email"
               name="email"
               placeholder="Enter your email"
+              value={form.email}
               onChange={handleChange}
               required
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
@@ -96,6 +98,7 @@ export default function Register() {
                 type={showPassword ? 'text' : 'password'}
                 name="password"
                 placeholder="Create a password"
+                value={form.password}
                 onChange={handleChange}
                 required
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"

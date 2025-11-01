@@ -66,6 +66,7 @@ export default function Login() {
               type="email"
               name="email"
               placeholder="Enter your email"
+              value={form.email}
               onChange={handleChange}
               required
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
@@ -90,6 +91,7 @@ export default function Login() {
                 type={showPassword ? 'text' : 'password'}
                 name="password"
                 placeholder="Enter your password"
+                value={form.password}
                 onChange={handleChange}
                 required
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
