@@ -5,6 +5,7 @@ import { ResumeContext } from "../../context/ResumeContext.jsx";
 export default function ResumeUpload({ setActiveTab }) {
   const [file, setFile] = useState(null);
   const [message, setMessage] = useState('');
+  const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
   const [resumes, setResumes] = useState([]);
   const { selectedResume, setSelectedResume } = useContext(ResumeContext);
@@ -31,12 +32,24 @@ export default function ResumeUpload({ setActiveTab }) {
   const handleFileChange = (e) => {
     setFile(e.target.files[0]);
     setMessage('');
+    setErrors(prev => ({ ...prev, file: '' }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!file) return setMessage('Please select a file first');
-    if (file.type !== 'application/pdf') return setMessage('Only PDF files allowed');
+    if (!file) {
+      setErrors({ file: 'Please select a file first' });
+      return;
+    }
+    if (file.type !== 'application/pdf') {
+      setErrors({ file: 'Only PDF files allowed' });
+      return;
+    }
+    const maxSize = 5 * 1024 * 1024; // 5MB
+    if (file.size && file.size > maxSize) {
+      setErrors({ file: 'File is too large. Max 5MB allowed' });
+      return;
+    }
 
     const formData = new FormData();
     formData.append('resume', file);
@@ -75,20 +88,21 @@ export default function ResumeUpload({ setActiveTab }) {
         <h2 className="text-2xl font-bold mb-4 text-center">Upload Your Resume</h2>
         <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row items-center gap-4">
           
-          <input
-            type="file"
-            accept=".pdf"
-            onChange={handleFileChange}
-            className="border p-2 rounded w-full sm:w-auto"
-          />
+            <input
+              type="file"
+              accept=".pdf"
+              onChange={handleFileChange}
+              className="border p-2 rounded w-full sm:w-auto"
+            />
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="bg-blue-600 text-white px-6 py-2 rounded disabled:opacity-50"
-          >
-            {loading ? 'Uploading...' : 'Upload'}
-          </button>
+            <button
+              type="submit"
+              disabled={loading}
+              className="bg-blue-600 text-white px-6 py-2 rounded disabled:opacity-50"
+            >
+              {loading ? 'Uploading...' : 'Upload'}
+            </button>
+            {errors.file && <p className="text-red-500 text-sm mt-2">{errors.file}</p>}
         </form>
 
         {message && <p className="mt-4 text-center text-gray-700">{message}</p>}

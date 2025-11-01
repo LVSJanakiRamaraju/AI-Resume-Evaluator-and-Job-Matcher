@@ -1,6 +1,7 @@
 import express from 'express';
 import pool from "../db.js";
 import authMiddleware from '../middleware/authMiddleware.js';
+import { similarityScore, safeJsonParse } from '../utils/matchUtils.js';
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 const API_MODEL = 'gemini-2.5-flash'; 
@@ -40,53 +41,6 @@ async function fetchWithRetry(url, options, maxRetries = 3) {
     }
   }
   throw new Error('Max retries reached.');
-}
-
-/**
- * Helper function to calculate the percentage similarity score between candidate and job skills.
- * @param {string[]} resumeSkills - Skills provided by the candidate.
- * @param {string[]} jobSkills - Required skills for the job.
- * @param {number|string} [jobId='N/A'] - Optional job ID for debugging context.
- * @returns {number} The match score (0-100).
- */
-function similarityScore(resumeSkills, jobSkills, jobId = 'N/A') {
-  const candidateSkillSet = new Set(resumeSkills.map(s => s.toLowerCase().trim()));
-  const requiredSkillSet = new Set(jobSkills.map(s => s.toLowerCase().trim()).filter(s => s.length > 0)); 
-
-  if (requiredSkillSet.size === 0) {
-    return 100; 
-  }
-
-  let intersectionCount = 0;
-  for (const skill of candidateSkillSet) {
-    if (requiredSkillSet.has(skill)) {
-      intersectionCount++;
-    }
-  }
-  
-  const score = (intersectionCount / requiredSkillSet.size) * 100;
-  const finalScore = Math.round(score);
-  
-  return finalScore;
-}
-
-/**
- * Helper function to safely parse LLM output that is expected to be JSON.
- * It strips common markdown code fences (```json) before parsing.
- * @param {string} rawText - The raw text response from the LLM.
- * @returns {object|null} The parsed JSON object or an object containing an error message.
- */
-function safeJsonParse(rawText) {
-  try {
-    const cleanedText = rawText.replace(/```json\s*|```/g, '').trim();
-    return JSON.parse(cleanedText);
-  } catch (e) {
-    console.error("Failed to parse AI response as JSON:", e.message);
-    return { 
-      error: "AI response format error. Could not parse JSON.",
-      raw_text_sample: rawText.substring(0, 200) + '...'
-    };
-  }
 }
 
 router.post("/job-matches", authMiddleware, async (req, res) => {

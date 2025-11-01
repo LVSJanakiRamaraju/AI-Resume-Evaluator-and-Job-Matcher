@@ -5,12 +5,21 @@ import API from "../api";
 export default function ForgotPassword() {
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
+  const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setMessage("");
     setLoading(true);
+    const errs = {};
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!email || !emailRegex.test(email)) errs.email = 'Please enter a valid email address';
+    if (Object.keys(errs).length) {
+      setErrors(errs);
+      setLoading(false);
+      return;
+    }
     try {
       const res = await API.post("/auth/forgot-password", { email });
       setMessage("Password reset link sent to your email!");
@@ -44,10 +53,11 @@ export default function ForgotPassword() {
               name="email"
               placeholder="Enter your registered email"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={(e) => { setEmail(e.target.value); setErrors(prev => ({ ...prev, email: '' })); }}
               required
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
             />
+            {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email}</p>}
           </div>
 
           <button

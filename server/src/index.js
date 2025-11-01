@@ -1,37 +1,7 @@
-import 'dotenv/config';
-import express from 'express';
-import cors from 'cors';
 import pool from './db.js';
-import resumeRoutes from './routes/resumeRoutes.js';
-import authRoutes from './routes/auth.js';
-import matchJobRoutes from './routes/matchJobRoutes.js';
-import authMiddleware from './middleware/authMiddleware.js';
+import app from './app.js';
 
-const app = express();
 const PORT = process.env.PORT || 5000;
-
-app.use(cors());
-app.use(express.json());
-
-app.get('/', (req, res) => {
-  res.json({ status: 'ok', message: 'AI Resume Evaluator backend running' });
-});
-
-app.use('/api/auth', authRoutes);
-app.use('/api/resume', resumeRoutes);
-app.use("/api/get", matchJobRoutes);
-
-app.get('/api/protected', authMiddleware, (req, res) => {
-  res.json({
-    message: 'You reached a protected route',
-    user: {
-      id: req.user.id,
-      name: req.user.name,
-      email: req.user.email,
-      role: req.user.role,
-    },
-  });
-});
 
 app.get('/api/db-test', async (req, res) => {
   try {
