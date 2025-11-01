@@ -66,6 +66,7 @@ export default function ResetPassword() {
                 type={showPassword ? 'text' : 'password'}
                 name="password"
                 placeholder="Enter new password"
+                value={form.password}
                 onChange={handleChange}
                 required
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
@@ -101,6 +102,7 @@ export default function ResetPassword() {
                 type={showConfirmPassword ? 'text' : 'password'}
                 name="confirmPassword"
                 placeholder="Confirm new password"
+                value={form.confirmPassword}
                 onChange={handleChange}
                 required
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
