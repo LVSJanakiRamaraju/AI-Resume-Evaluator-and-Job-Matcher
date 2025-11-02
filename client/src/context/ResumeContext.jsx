@@ -1,4 +1,4 @@
-import { createContext, useState, useEffect } from "react";
+import React, { createContext, useState, useEffect } from "react";
 
 export const ResumeContext = createContext();
 
@@ -14,6 +14,8 @@ export function ResumeProvider({ children }) {
   useEffect(() => {
     if (selectedResume) {
       localStorage.setItem("selectedResume", JSON.stringify(selectedResume));
+    } else {
+      localStorage.removeItem("selectedResume");
     }
   }, [selectedResume]);
 

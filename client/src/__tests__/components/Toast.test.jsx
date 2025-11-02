@@ -37,7 +37,6 @@ test('Toast - displays provided message', () => {
 
 test('Toast - has positioning classes', () => {
   render(<Toast open message="Pos" onClose={() => {}} />)
-  // message text sits inside an inner div; traverse up to the root toast container
   const inner = screen.getByText(/pos/i).closest('div')
   const root = inner && inner.closest('.fixed')
   expect(root).toHaveClass('fixed')

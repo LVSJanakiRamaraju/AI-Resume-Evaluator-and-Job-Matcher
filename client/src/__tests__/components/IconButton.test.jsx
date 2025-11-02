@@ -25,7 +25,6 @@ test('IconButton - keyboard Enter triggers click handler', () => {
   const btn = screen.getByRole('button', { name: /kbd-btn/i })
   btn.focus()
   fireEvent.keyDown(btn, { key: 'Enter', code: 'Enter' })
-  // expecting onClick not necessarily bound to Enter, but ensure focusable
   expect(document.activeElement).toBe(btn)
 })
 

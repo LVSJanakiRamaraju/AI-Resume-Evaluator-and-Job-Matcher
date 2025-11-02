@@ -8,7 +8,6 @@ test('PasswordInput - toggles show/hide button', () => {
   const btn = screen.getByRole('button')
   expect(btn).toBeInTheDocument()
   fireEvent.click(btn)
-  // toggled, no error
 })
 
 test('PasswordInput - input has correct type and placeholder', () => {

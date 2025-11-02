@@ -23,7 +23,6 @@ test('ResumeListItem - delete button calls onDelete', () => {
   render(<ResumeListItem resume={resume} onDelete={onDelete} />)
   const del = screen.getByLabelText(/delete r.pdf/i)
   fireEvent.click(del)
-  // onDelete may be called after stopPropagation; at minimum no crash
   expect(del).toBeTruthy()
 })
 
@@ -34,8 +33,6 @@ test('ResumeListItem - is focusable and reacts to Enter key', () => {
   item.focus()
   fireEvent.keyDown(item, { key: 'Enter' })
   expect(document.activeElement).toBe(item)
-  // verify onSelect called
-  // onSelect is called by the component; ensure it was invoked
   expect(onSelect).toHaveBeenCalled()
 })
 

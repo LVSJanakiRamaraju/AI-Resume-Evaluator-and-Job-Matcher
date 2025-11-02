@@ -20,7 +20,25 @@ export default function AuthProvider({ children }) {
         setUser(res.data.user)
       } catch (err) {
         console.error('Auth check failed:', err)
-        localStorage.removeItem('token')
+        const status = err?.response?.status
+        if (status === 401) {
+          try {
+            const refreshRes = await API.post('/refresh')
+            const newToken = refreshRes?.data?.token
+            if (newToken) {
+              localStorage.setItem('token', newToken)
+              const retry = await API.get('/protected')
+              setUser(retry.data.user)
+            } else {
+              localStorage.removeItem('token')
+            }
+          } catch (refreshErr) {
+            console.error('Token refresh failed:', refreshErr)
+            localStorage.removeItem('token')
+          }
+        } else {
+          localStorage.removeItem('token')
+        }
       } finally {
         setLoading(false)
       }

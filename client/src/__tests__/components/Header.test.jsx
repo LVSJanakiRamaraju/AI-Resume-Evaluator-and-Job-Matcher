@@ -17,9 +17,6 @@ test('Header - logout button calls onLogout', () => {
   expect(onLogout).toHaveBeenCalled()
 })
 
-// theme tests removed — theme was removed from the app
-
-
 test('Header - shows brand/logo area', () => {
   render(<Header user={{ name: 'Brand' }} onLogout={() => {}} />)
   expect(screen.getByText(/brand/i) || screen.getByText(/u/i)).toBeTruthy()
