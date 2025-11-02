@@ -72,3 +72,24 @@ test('submits valid form and shows success message', async () => {
     password: 'Password123'
   });
 });
+
+test('renders all static UI elements', () => {
+  render(
+    <MemoryRouter>
+      <Register />
+    </MemoryRouter>
+  );
+
+  expect(screen.getByText(/create your account/i)).toBeInTheDocument();
+  expect(screen.getByText(/ai resume evaluator/i)).toBeInTheDocument();
+  expect(screen.getByText(/full name/i)).toBeInTheDocument();
+  expect(screen.getByText(/email/i)).toBeInTheDocument();
+  expect(screen.getByText(/password/i)).toBeInTheDocument();
+  expect(screen.getByPlaceholderText(/enter your name/i)).toBeInTheDocument();
+  expect(screen.getByPlaceholderText(/enter your email/i)).toBeInTheDocument();
+  expect(screen.getByPlaceholderText(/create a password/i)).toBeInTheDocument();
+  expect(screen.getByText(/at least 8 characters/i)).toBeInTheDocument();
+  expect(screen.getByText(/contains letters/i)).toBeInTheDocument();
+  expect(screen.getByText(/contains numbers/i)).toBeInTheDocument();
+  expect(screen.getByText(/login here/i)).toBeInTheDocument();
+});

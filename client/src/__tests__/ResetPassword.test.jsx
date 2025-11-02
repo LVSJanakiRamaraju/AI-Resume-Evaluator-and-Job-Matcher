@@ -56,3 +56,17 @@ test('successful reset shows message', async () => {
   expect(await screen.findByText(/Password reset successful!/i)).toBeInTheDocument();
   expect(API.post).toHaveBeenCalled();
 });
+
+test('renders static UI elements on reset password page', () => {
+  render(
+    <MemoryRouter initialEntries={["/reset/abc123"]}>
+      <ResetPassword />
+    </MemoryRouter>
+  );
+
+  expect(screen.getByRole('heading', { name: /reset password/i })).toBeInTheDocument();
+  expect(screen.getByPlaceholderText(/enter new password/i)).toBeInTheDocument();
+  expect(screen.getByPlaceholderText(/confirm new password/i)).toBeInTheDocument();
+  expect(screen.getByText(/back to/i)).toBeInTheDocument();
+  expect(screen.getByText(/at least 8 characters/i)).toBeInTheDocument();
+});

@@ -55,3 +55,21 @@ test('shows server error on failed login', async () => {
 
   expect(await screen.findByText(/Invalid credentials/i)).toBeInTheDocument();
 });
+
+test('renders all static UI elements on login page', () => {
+  const setUser = vi.fn();
+  render(
+    <AuthContext.Provider value={{ setUser }}>
+      <MemoryRouter>
+        <Login />
+      </MemoryRouter>
+    </AuthContext.Provider>
+  );
+
+  expect(screen.getByText(/welcome back user/i)).toBeInTheDocument();
+  expect(screen.getByText(/ai resume evaluator/i)).toBeInTheDocument();
+  expect(screen.getByPlaceholderText(/enter your email/i)).toBeInTheDocument();
+  expect(screen.getByPlaceholderText(/enter your password/i)).toBeInTheDocument();
+  expect(screen.getByText(/forgot password\?/i)).toBeInTheDocument();
+  expect(screen.getByText(/register here/i)).toBeInTheDocument();
+});

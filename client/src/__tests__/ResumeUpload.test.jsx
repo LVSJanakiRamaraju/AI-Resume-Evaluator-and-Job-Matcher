@@ -51,3 +51,18 @@ test('uploads a pdf and updates context on success', async () => {
   expect(await screen.findByText(/Upload successful/i)).toBeInTheDocument();
   expect(ctx.setSelectedResume).toHaveBeenCalled();
 });
+
+test('renders static UI elements in resume upload', () => {
+  const ctx = { selectedResume: null, setSelectedResume: vi.fn() };
+  render(
+    <ResumeContext.Provider value={ctx}>
+      <ResumeUpload setActiveTab={() => {}} />
+    </ResumeContext.Provider>
+  );
+
+  expect(screen.getByText(/upload your resume/i)).toBeInTheDocument();
+  expect(document.querySelector('input[type="file"]')).toBeTruthy();
+  expect(screen.getByRole('button', { name: /upload/i })).toBeInTheDocument();
+  expect(screen.getByText(/uploaded resumes/i)).toBeInTheDocument();
+  expect(screen.getByText(/no resumes uploaded yet/i)).toBeInTheDocument();
+});

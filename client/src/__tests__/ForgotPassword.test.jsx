@@ -40,3 +40,17 @@ test('submits email and shows success message', async () => {
   expect(await screen.findByText(/Password reset link sent to your email!/i)).toBeInTheDocument();
   expect(API.post).toHaveBeenCalledWith('/auth/forgot-password', { email: 'user@user.com' });
 });
+
+test('renders static elements on forgot password page', () => {
+  render(
+    <MemoryRouter>
+      <ForgotPassword />
+    </MemoryRouter>
+  );
+
+  expect(screen.getByText(/forgot password/i)).toBeInTheDocument();
+  expect(screen.getByText(/enter your registered email/i)).toBeInTheDocument();
+  expect(screen.getByPlaceholderText(/enter your registered email/i)).toBeInTheDocument();
+  expect(screen.getByText(/back to login/i)).toBeInTheDocument();
+  expect(screen.getByRole('button', { name: /send reset link/i })).toBeInTheDocument();
+});
