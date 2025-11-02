@@ -5,7 +5,13 @@ export default function ResumeListItem({ resume, selected, onSelect, onDelete })
   return (
     <li className={`py-2 px-3 hover:bg-blue-50 rounded flex justify-between items-center ${selected ? 'bg-blue-100 font-semibold' : ''}`}>
 
-        <button onClick={() => onSelect(resume)} className="flex items-center w-full text-left">
+        <div
+          role="button"
+          tabIndex={0}
+          onClick={() => onSelect(resume)}
+          onKeyDown={(e) => { if (e.key === 'Enter') onSelect(resume) }}
+          className="flex items-center w-full text-left"
+        >
         <div className="flex flex-col max-w-[75%]">
             <span className="text-sm font-semibold truncate">
             {resume.original_name}
@@ -34,7 +40,7 @@ export default function ResumeListItem({ resume, selected, onSelect, onDelete })
             </svg>
             </IconButton>
         )}
-        </button>
+        </div>
 
     </li>
   )

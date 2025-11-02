@@ -20,9 +20,11 @@ export default function ResumeUpload({ setActiveTab }) {
   const { selectedResume, setSelectedResume } = useContext(ResumeContext);
 
   useEffect(() => {
+    let mounted = true
     async function fetchResumes() {
       try {
         const res = await API.get('/resume/history');
+        if (!mounted) return
         setResumes(res.data);
 
         if (!selectedResume && res.data.length > 0) {
@@ -31,11 +33,13 @@ export default function ResumeUpload({ setActiveTab }) {
           localStorage.setItem('selectedResume', JSON.stringify(latestResume));
         }
       } catch (err) {
+        if (!mounted) return
         console.error('Error fetching resumes:', err.response?.data || err.message);
         setResumes([]);
       }
     }
     fetchResumes();
+    return () => { mounted = false }
   }, [selectedResume]);
 
   const handleFileChange = (selected) => {

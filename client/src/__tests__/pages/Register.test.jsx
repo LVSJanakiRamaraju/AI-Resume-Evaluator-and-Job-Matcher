@@ -1,9 +1,9 @@
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
-import Register from '../pages/Register';
+import Register from '../../pages/Register';
 
-vi.mock('../api', () => ({ default: { post: vi.fn() } }));
+vi.mock('../../api', () => ({ default: { post: vi.fn() } }));
 
 test('renders register form and shows validation errors', async () => {
   render(
@@ -43,7 +43,7 @@ test('password toggle works', async () => {
 });
 
 test('submits valid form and shows success message', async () => {
-  const { default: API } = await import('../api');
+  const { default: API } = await import('../../api');
   API.post.mockResolvedValueOnce({ data: { success: true } });
 
   render(
@@ -93,3 +93,44 @@ test('renders all static UI elements', () => {
   expect(screen.getByText(/contains numbers/i)).toBeInTheDocument();
   expect(screen.getByText(/login here/i)).toBeInTheDocument();
 });
+
+test('shows server error message on registration failure', async () => {
+  const { default: API } = await import('../../api');
+  API.post.mockRejectedValueOnce({ response: { data: { error: 'Email already used' } } });
+
+  render(
+    <MemoryRouter>
+      <Register />
+    </MemoryRouter>
+  );
+
+  const nameInput = screen.getByPlaceholderText(/enter your name/i);
+  const emailInput = screen.getByPlaceholderText(/enter your email/i);
+  const pwInput = screen.getByPlaceholderText(/create a password/i);
+  const submit = screen.getByRole('button', { name: /register/i });
+
+  fireEvent.change(nameInput, { target: { value: 'Bob' } });
+  fireEvent.change(emailInput, { target: { value: 'bob@used.com' } });
+  fireEvent.change(pwInput, { target: { value: 'Password123' } });
+  const formEl = submit.closest('form');
+  if (formEl) formEl.noValidate = true;
+  fireEvent.click(submit);
+
+  expect(await screen.findByText(/Email already used/i)).toBeInTheDocument();
+})
+
+test('form inputs have required attribute', () => {
+  render(
+    <MemoryRouter>
+      <Register />
+    </MemoryRouter>
+  )
+
+  const nameInput = screen.getByPlaceholderText(/enter your name/i)
+  const emailInput = screen.getByPlaceholderText(/enter your email/i)
+  const pwInput = screen.getByPlaceholderText(/create a password/i)
+
+  expect(nameInput).toHaveAttribute('required')
+  expect(emailInput).toHaveAttribute('required')
+  expect(pwInput).toHaveAttribute('required')
+})

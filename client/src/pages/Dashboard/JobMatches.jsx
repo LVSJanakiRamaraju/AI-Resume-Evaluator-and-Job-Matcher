@@ -13,19 +13,23 @@ export default function JobMatches() {
   const [loadingMatches, setLoadingMatches] = useState(false);
 
   useEffect(() => {
+    let mounted = true
     async function fetchResumes() {
       try {
         setLoadingResumes(true);
         const res = await API.get("/resume/history");
+        if (!mounted) return
         setResumes(res.data);
       } catch (err) {
+        if (!mounted) return
         console.error("Error fetching resumes:", err.response?.data || err.message);
         setResumes([]);
       } finally {
-        setLoadingResumes(false);
+        if (mounted) setLoadingResumes(false);
       }
     }
     fetchResumes();
+    return () => { mounted = false }
   }, []);
 
   useEffect(() => {
