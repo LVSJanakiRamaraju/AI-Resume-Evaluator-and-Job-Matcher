@@ -108,4 +108,40 @@ router.get('/history', authMiddleware, async (req, res) => {
   }
 });
 
+router.delete('/:id', authMiddleware, async (req, res) => {
+  const id = req.params.id;
+  try {
+    const result = await pool.query(
+      `SELECT id, user_id, file_url FROM resumes WHERE id = $1`,
+      [id]
+    );
+
+    if (result.rowCount === 0) {
+      return res.status(404).json({ error: 'Resume not found' });
+    }
+
+    const resume = result.rows[0];
+    if (resume.user_id !== req.user.id) {
+      return res.status(403).json({ error: 'Not authorized to delete this resume' });
+    }
+
+    if (resume.file_url) {
+      try {
+        const parts = resume.file_url.split('/');
+        const fileName = parts[parts.length - 1] || '';
+        const publicId = `resumes/${fileName.split('.').slice(0, -1).join('.')}`;
+        await cloudinary.uploader.destroy(publicId, { resource_type: 'raw' });
+      } catch (e) {
+        console.error('Cloudinary delete failed for resume id', id, e.message || e);
+      }
+    }
+
+    await pool.query(`DELETE FROM resumes WHERE id = $1`, [id]);
+    res.json({ success: true, message: 'Resume deleted' });
+  } catch (err) {
+    console.error('Delete error:', err);
+    res.status(500).json({ error: 'Server error during delete' });
+  }
+});
+
 export default router;
