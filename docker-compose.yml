@@ -30,7 +30,9 @@ services:
     command: ["npm", "start"]
 
   client:
-    build: ./client
+    build:
+      context: ./client
+      dockerfile: Dockerfile.prod
     container_name: resume_client
     restart: always
     env_file:
@@ -38,9 +40,8 @@ services:
     depends_on:
       - server
     ports:
-      - "5173:5173"
-    # Build the project first, then run a lightweight HTTP server
-    command: ["sh", "-c", "npm install && npm run build && npx serve -s dist -l 5173"]
+      - "5173:80"
+    command: ["sh", "-c", "echo client running"]
 
 volumes:
   postgres_data:
