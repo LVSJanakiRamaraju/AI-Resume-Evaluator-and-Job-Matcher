@@ -40,4 +40,15 @@ describe('safeJsonParse', () => {
     expect(res).toHaveProperty('error');
     expect(res).toHaveProperty('raw_text_sample');
   });
+
+  test('empty string returns error object', () => {
+    const res = safeJsonParse('');
+    expect(res).toHaveProperty('error');
+  });
+});
+
+describe('similarityScore edge cases', () => {
+  test('empty resume skills returns 0 when job has skills', () => {
+    expect(similarityScore([], ['node', 'react'])).toBe(0);
+  });
 });

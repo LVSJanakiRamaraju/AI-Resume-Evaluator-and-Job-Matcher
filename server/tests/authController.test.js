@@ -113,6 +113,69 @@ describe('authController.login', () => {
   });
 });
 
+describe('authController.error paths', () => {
+  test('register handles createUser throwing an error', async () => {
+    const { getUserByEmail, createUser } = await import('../src/models/userModel.js');
+    getUserByEmail.mockResolvedValue(null);
+    createUser.mockRejectedValueOnce(new Error('db fail'));
+    const mod = await import('../src/controllers/authController.js');
+    const req = { body: { name: 'x', email: 'x@x.com', password: 'p' } };
+    const res = mockRes();
+    const spy = jest.spyOn(console, 'error').mockImplementation(() => {});
+    await mod.register(req, res);
+    expect(res.status).toHaveBeenCalledWith(500);
+    expect(spy).toHaveBeenCalled();
+    spy.mockRestore();
+  });
+
+  test('login handles bcrypt.compare throwing error', async () => {
+    const { getUserByEmail } = await import('../src/models/userModel.js');
+    getUserByEmail.mockResolvedValue({ id: 1, password_hash: 'hash' });
+    const bcrypt = await import('bcrypt');
+    bcrypt.default.compare.mockRejectedValueOnce(new Error('bcrypt fail'));
+    const mod = await import('../src/controllers/authController.js');
+    const req = { body: { email: 'x@x.com', password: 'p' } };
+    const res = mockRes();
+    const spy = jest.spyOn(console, 'error').mockImplementation(() => {});
+    await mod.login(req, res);
+    expect(res.status).toHaveBeenCalledWith(500);
+    expect(spy).toHaveBeenCalled();
+    spy.mockRestore();
+  });
+  
+  test('forgotPassword handles email send failure', async () => {
+    const { getUserByEmail } = await import('../src/models/userModel.js');
+    getUserByEmail.mockResolvedValue({ id: 1, email: 'fail@send.com', name: 'Fail' });
+    const mail = await import('../src/utils/mail.js');
+    mail.sendResetPasswordEmail.mockRejectedValueOnce(new Error('smtp fail'));
+
+    const mod = await import('../src/controllers/authController.js');
+    const req = { body: { email: 'fail@send.com' } };
+    const res = mockRes();
+    const spy = jest.spyOn(console, 'error').mockImplementation(() => {});
+    await mod.forgotPassword(req, res);
+    expect(res.status).toHaveBeenCalledWith(500);
+    expect(spy).toHaveBeenCalled();
+    spy.mockRestore();
+  });
+
+  test('resetPassword handles updateUserPassword throwing error', async () => {
+    const jwt = await import('jsonwebtoken');
+    jwt.default.verify = () => ({ userId: 1 });
+    const { updateUserPassword } = await import('../src/models/userModel.js');
+    updateUserPassword.mockRejectedValueOnce(new Error('db fail'));
+
+    const mod = await import('../src/controllers/authController.js');
+    const req = { params: { token: 't' }, body: { password: 'newpass' } };
+    const res = mockRes();
+    const spy = jest.spyOn(console, 'error').mockImplementation(() => {});
+    await mod.resetPassword(req, res);
+    expect(res.status).toHaveBeenCalledWith(500);
+    expect(spy).toHaveBeenCalled();
+    spy.mockRestore();
+  });
+});
+
 describe('authController.forgotPassword', () => {
   test('returns 400 if missing email', async () => {
     const req = { body: {} };

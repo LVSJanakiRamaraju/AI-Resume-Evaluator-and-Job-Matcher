@@ -1,5 +1,5 @@
 import request from 'supertest';
-import app from '../src/app.js';
+import app from '../src/index.js';
 import { describe, expect, test } from '@jest/globals';
 
 describe('app root', () => {
