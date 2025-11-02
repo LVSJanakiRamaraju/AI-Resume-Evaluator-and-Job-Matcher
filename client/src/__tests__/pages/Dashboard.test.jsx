@@ -1,0 +1,88 @@
+import React from 'react'
+import { render, screen, fireEvent } from '@testing-library/react'
+import Dashboard from '../../pages/Dashboard/Dashboard'
+import { AuthContext } from '../../context/AuthContext'
+import { ResumeContext } from '../../context/ResumeContext'
+
+const navigateMock = vi.fn()
+vi.mock('react-router-dom', () => ({
+  useNavigate: () => navigateMock,
+}))
+
+describe('Dashboard', () => {
+  beforeEach(() => {
+    navigateMock.mockClear()
+  })
+
+  it('renders welcome with user name and logout button calls logout', () => {
+    const logout = vi.fn()
+
+    render(
+      <AuthContext.Provider value={{ user: { name: 'Alice' }, logout }}>
+        <ResumeContext.Provider value={{ selectedResume: null, setSelectedResume: vi.fn() }}>
+          <Dashboard />
+        </ResumeContext.Provider>
+      </AuthContext.Provider>
+    )
+
+    expect(screen.getByText(/welcome, alice/i)).toBeInTheDocument()
+
+    const logoutBtn = screen.getByRole('button', { name: /logout/i })
+    fireEvent.click(logoutBtn)
+    expect(logout).toHaveBeenCalled()
+    expect(navigateMock).toHaveBeenCalledWith('/login')
+  })
+
+  it('changes tabs when nav buttons clicked', () => {
+    render(
+      <AuthContext.Provider value={{ user: { name: 'Bob' }, logout: vi.fn() }}>
+        <ResumeContext.Provider value={{ selectedResume: null, setSelectedResume: vi.fn() }}>
+          <Dashboard />
+        </ResumeContext.Provider>
+      </AuthContext.Provider>
+    )
+
+    const jobsBtn = screen.getByRole('button', { name: /job matches/i })
+    fireEvent.click(jobsBtn)
+    expect(screen.getByText(/uploaded resumes/i)).toBeInTheDocument()
+  })
+
+  it('switches to resume upload tab when clicked', () => {
+    render(
+      <AuthContext.Provider value={{ user: { name: 'Bob' }, logout: vi.fn() }}>
+        <ResumeContext.Provider value={{ selectedResume: null, setSelectedResume: vi.fn() }}>
+          <Dashboard />
+        </ResumeContext.Provider>
+      </AuthContext.Provider>
+    )
+
+    const uploadBtn = screen.getByRole('button', { name: /resume upload/i })
+    fireEvent.click(uploadBtn)
+    expect(screen.getByText(/upload your resume/i)).toBeInTheDocument()
+  })
+
+  it('updates localStorage when tab changes and logout clears stored keys', () => {
+    localStorage.setItem('activeTab', 'jobs')
+    localStorage.setItem('selectedResume', JSON.stringify({ id: 123 }))
+
+    const logout = vi.fn()
+
+    render(
+      <AuthContext.Provider value={{ user: { name: 'Alice' }, logout }}>
+        <ResumeContext.Provider value={{ selectedResume: null, setSelectedResume: vi.fn() }}>
+          <Dashboard />
+        </ResumeContext.Provider>
+      </AuthContext.Provider>
+    )
+
+    const jobsBtn = screen.getByRole('button', { name: /job matches/i })
+    fireEvent.click(jobsBtn)
+    expect(localStorage.getItem('activeTab')).toBe('jobs')
+
+    const logoutBtn = screen.getByRole('button', { name: /logout/i })
+    fireEvent.click(logoutBtn)
+    expect(logout).toHaveBeenCalled()
+    expect(localStorage.getItem('activeTab')).toBeNull()
+    expect(localStorage.getItem('selectedResume')).toBeNull()
+  })
+})
