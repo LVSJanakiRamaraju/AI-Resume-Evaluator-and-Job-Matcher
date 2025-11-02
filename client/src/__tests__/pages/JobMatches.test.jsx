@@ -12,12 +12,11 @@ vi.mock('../../api', () => ({
 
 import API from '../../api'
 
-describe('JobMatches', () => {
-  beforeEach(() => {
-    vi.resetAllMocks()
-  })
+beforeEach(() => {
+  vi.resetAllMocks()
+})
 
-  it('shows no resumes message when none returned', async () => {
+test('JobMatches - shows no resumes message when none returned', async () => {
     API.get.mockResolvedValue({ data: [] })
 
     render(
@@ -30,7 +29,7 @@ describe('JobMatches', () => {
     expect(screen.getByText(/no resumes uploaded yet/i)).toBeInTheDocument()
   })
 
-  it('renders matches when selectedResume present and API returns matches', async () => {
+test('JobMatches - renders matches when selectedResume present and API returns matches', async () => {
     const resume = { id: 1, original_name: 'test.pdf', created_at: new Date().toISOString() }
     API.get.mockResolvedValue({ data: [resume] })
     API.post.mockResolvedValue({ data: { data: [{ title: 'Dev', match_score: 88, reasoning: { reasoning: 'ok', fit_skills: ['js'], missing_skills: ['py'] } }] } })
@@ -48,7 +47,7 @@ describe('JobMatches', () => {
   expect(screen.getByText(/88%/i)).toBeInTheDocument()
   })
 
-  it('clicking a resume calls setSelectedResume', async () => {
+test('JobMatches - clicking a resume calls setSelectedResume', async () => {
     const resume = { id: 2, original_name: 'file.pdf', created_at: new Date().toISOString() }
     API.get.mockResolvedValue({ data: [resume] })
     const setSelectedResume = vi.fn()
@@ -66,7 +65,7 @@ describe('JobMatches', () => {
   expect(setSelectedResume).toHaveBeenCalledWith(expect.objectContaining({ id: 2 }))
   })
 
-  it('renders static UI parts', async () => {
+test('JobMatches - renders static UI parts', async () => {
     API.get.mockResolvedValue({ data: [] })
     render(
       <ResumeContext.Provider value={{ selectedResume: null, setSelectedResume: vi.fn() }}>
@@ -80,7 +79,7 @@ describe('JobMatches', () => {
     expect(screen.getByText(/no resume selected/i)).toBeInTheDocument()
   })
 
-  it('handles invalid AI JSON gracefully', async () => {
+test('JobMatches - handles invalid AI JSON gracefully', async () => {
     const resume = { id: 7, original_name: 'ai-invalid.pdf', created_at: new Date().toISOString() }
     API.get.mockResolvedValue({ data: [resume] })
     API.post.mockResolvedValue({ data: 'this-is-not-the-expected-structure' })
@@ -96,7 +95,7 @@ describe('JobMatches', () => {
     await waitFor(() => expect(screen.getByText(/No matches found for this resume/i)).toBeInTheDocument())
   })
 
-  it('shows message when match API fails', async () => {
+test('JobMatches - shows message when match API fails', async () => {
     const resume = { id: 8, original_name: 'err.pdf', created_at: new Date().toISOString() }
     API.get.mockResolvedValue({ data: [resume] })
     API.post.mockRejectedValueOnce(new Error('Server error'))
@@ -112,7 +111,7 @@ describe('JobMatches', () => {
     await waitFor(() => expect(screen.getByText(/No matches found for this resume/i)).toBeInTheDocument())
   })
 
-  it('shows loading indicator while matches are being retrieved', async () => {
+test('JobMatches - shows loading indicator while matches are being retrieved', async () => {
     const resume = { id: 9, original_name: 'loading.pdf', created_at: new Date().toISOString() }
     API.get.mockResolvedValue({ data: [resume] })
     let resolvePost
@@ -132,7 +131,7 @@ describe('JobMatches', () => {
     await waitFor(() => expect(screen.getByText(/No matches found for this resume/i)).toBeInTheDocument())
   })
 
-  it('handles AI returning null data gracefully', async () => {
+test('JobMatches - handles AI returning null data gracefully', async () => {
     const resume = { id: 10, original_name: 'null-data.pdf', created_at: new Date().toISOString() }
     API.get.mockResolvedValue({ data: [resume] })
     API.post.mockResolvedValue({ data: { data: null } })
@@ -148,7 +147,7 @@ describe('JobMatches', () => {
     await waitFor(() => expect(screen.getByText(/No matches found for this resume/i)).toBeInTheDocument())
   })
 
-  it('renders job title when AI returns match without reasoning and hides reasoning block', async () => {
+test('JobMatches - renders job title when AI returns match without reasoning and hides reasoning block', async () => {
     const resume = { id: 11, original_name: 'no-reasoning.pdf', created_at: new Date().toISOString() }
     API.get.mockResolvedValue({ data: [resume] })
     API.post.mockResolvedValue({ data: { data: [{ title: 'EdgeCase', match_score: 50 }] } })
@@ -164,4 +163,3 @@ describe('JobMatches', () => {
     await waitFor(() => expect(screen.getByText(/edgecase/i)).toBeInTheDocument())
     expect(screen.queryByText(/Reasoning:/i)).not.toBeInTheDocument()
   })
-})

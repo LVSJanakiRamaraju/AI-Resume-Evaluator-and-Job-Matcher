@@ -42,16 +42,16 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="flex flex-col h-screen">
+    <div className="flex flex-col h-screen bg-white dark:bg-slate-900 dark:text-slate-200">
       <Header user={user} onLogout={handleLogout} />
 
-      <nav className="bg-white shadow-md flex justify-center space-x-6 p-3">
+      <nav className="bg-white dark:bg-slate-800 shadow-md flex justify-center space-x-6 p-3">
         <button onClick={() => handleTabChange('resume')} className={`${activeTab === 'resume' ? 'text-blue-600 font-semibold' : 'text-gray-600'}`}>Resume Upload</button>
         <button onClick={() => handleTabChange('jobs')} className={`${activeTab === 'jobs' ? 'text-blue-600 font-semibold' : 'text-gray-600'}`}>Job Matches</button>
         <button onClick={() => handleTabChange('profile')} className={`${activeTab === 'profile' ? 'text-blue-600 font-semibold' : 'text-gray-600'}`}>Profile</button>
       </nav>
 
-      <main className="flex-1 p-6 overflow-y-auto bg-gray-50">
+      <main className="flex-1 p-6 overflow-y-auto bg-gray-50 dark:bg-slate-900 dark:text-slate-200">
         {renderContent()}
       </main>
     </div>

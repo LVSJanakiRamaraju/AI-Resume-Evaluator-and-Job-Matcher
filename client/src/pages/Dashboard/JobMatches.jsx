@@ -57,8 +57,8 @@ export default function JobMatches() {
   };
 
   return (
-    <div className="max-w-6xl mx-auto p-6 grid grid-cols-1 md:grid-cols-3 gap-6">
-      <div className="bg-white p-4 rounded-lg shadow-md overflow-y-auto max-h-[600px]">
+    <div className="max-w-6xl mx-auto p-6 grid grid-cols-1 md:grid-cols-3 gap-6 dark:text-slate-200">
+      <div className="bg-white dark:bg-slate-800 dark:text-slate-200 p-4 rounded-lg shadow-md overflow-y-auto max-h-[600px]">
         <h3 className="text-lg font-semibold mb-4">Uploaded Resumes</h3>
         {loadingResumes ? (
           <LoadingSpinner message="Loading..." />
@@ -73,7 +73,7 @@ export default function JobMatches() {
         )}
       </div>
 
-      <div className="md:col-span-2 bg-white p-6 rounded-lg shadow-md overflow-y-auto max-h-[600px]">
+  <div className="md:col-span-2 bg-white dark:bg-slate-800 dark:text-slate-200 p-6 rounded-lg shadow-md overflow-y-auto max-h-[600px]">
         {!selectedResume ? (
           <p className="text-center mt-20 text-red-600">No resume selected. Select one from the left panel.</p>
         ) : loadingMatches ? (

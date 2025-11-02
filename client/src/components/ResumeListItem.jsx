@@ -3,7 +3,7 @@ import IconButton from './IconButton'
 
 export default function ResumeListItem({ resume, selected, onSelect, onDelete }) {
   return (
-    <li className={`py-2 px-3 hover:bg-blue-50 rounded flex justify-between items-center ${selected ? 'bg-blue-100 font-semibold' : ''}`}>
+    <li className={`py-2 px-3 hover:bg-blue-50 dark:hover:bg-slate-700 rounded flex justify-between items-center ${selected ? 'bg-blue-100 dark:bg-slate-700 font-semibold' : ''}`}>
 
         <div
           role="button"
@@ -13,10 +13,10 @@ export default function ResumeListItem({ resume, selected, onSelect, onDelete })
           className="flex items-center w-full text-left"
         >
         <div className="flex flex-col max-w-[75%]">
-            <span className="text-sm font-semibold truncate">
+            <span className="text-sm font-semibold truncate dark:text-slate-200">
             {resume.original_name}
             </span>
-            <span className="text-gray-400 text-xs">
+            <span className="text-gray-400 dark:text-slate-400 text-xs">
             {new Date(resume.created_at).toLocaleString()}
             </span>
         </div>

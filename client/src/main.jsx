@@ -10,15 +10,14 @@ import ResetPassword from "./pages/ResetPassword";
 import Dashboard from './pages/Dashboard/Dashboard.jsx'
 import AuthProvider from './context/AuthContext';
 import { ResumeProvider } from "./context/ResumeContext.jsx";
-import { ThemeProvider } from './context/ThemeContext'
+// ThemeProvider removed — no theme context
 import './index.css'
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <BrowserRouter>
      <AuthProvider>
-       <ThemeProvider>
-        <Routes>
+       <Routes>
           <Route path="/" element={<App />} />
           <Route path="/register" element={<Register />} />
           <Route path="/login" element={<Login />} />
@@ -32,8 +31,7 @@ ReactDOM.createRoot(document.getElementById('root')).render(
             }
           />
         </Routes>
-       </ThemeProvider>
-      </AuthProvider>
+  </AuthProvider>
     </BrowserRouter>
   </React.StrictMode>
 )

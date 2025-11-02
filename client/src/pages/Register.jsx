@@ -43,15 +43,15 @@ export default function Register() {
   };
 
   return (
-    <section className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-white to-blue-50 relative overflow-hidden px-6">
+  <section className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-white to-blue-50 dark:bg-slate-900 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 relative overflow-hidden px-6">
       <div className="absolute top-[-10%] left-[-10%] w-[300px] h-[300px] bg-blue-300/20 rounded-full blur-3xl"></div>
       <div className="absolute bottom-[-10%] right-[-10%] w-[350px] h-[350px] bg-indigo-300/20 rounded-full blur-3xl"></div>
 
-      <div className="relative z-10 w-full max-w-md bg-white rounded-2xl shadow-2xl border border-slate-100 p-8">
+      <div className="relative z-10 w-full max-w-md bg-white dark:bg-slate-800 dark:text-slate-200 rounded-2xl shadow-2xl border border-slate-100 dark:border-slate-700 p-8">
         <h2 className="text-3xl font-extrabold text-gray-800 text-center mb-2">
           Create Your Account 
         </h2>
-        <p className="text-gray-500 text-center mb-6 text-sm">
+        <p className="text-gray-500 dark:text-slate-300 text-center mb-6 text-sm">
           Join the <span className="text-blue-600 font-medium">AI Resume Evaluator</span> and get job matches powered by intelligence.
         </p>
 

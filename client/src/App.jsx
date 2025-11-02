@@ -26,7 +26,7 @@ export default function Home() {
 
 
   return (
-    <section className="relative flex flex-col md:flex-row items-center justify-between min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50 overflow-hidden px-6 sm:px-12 lg:px-20">
+    <section className="relative flex flex-col md:flex-row items-center justify-between min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50 dark:bg-slate-900 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 overflow-hidden px-6 sm:px-12 lg:px-20">
       
       <div className="absolute top-[-5%] left-[-10%] w-[350px] h-[350px] bg-blue-300/20 rounded-full blur-3xl"></div>
       <div className="absolute bottom-[-10%] right-[-5%] w-[400px] h-[400px] bg-indigo-300/20 rounded-full blur-3xl"></div>
@@ -61,11 +61,11 @@ export default function Home() {
       </div>
 
       <div className="relative z-10 mt-12 md:mt-0 flex justify-center md:w-[50%]">
-        <div className="bg-white rounded-2xl shadow-2xl p-6 sm:p-8 w-full max-w-md border border-slate-100">
+        <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl p-6 sm:p-8 w-full max-w-md border border-slate-100 dark:border-slate-700">
           <h2 className="text-2xl font-bold text-gray-800 mb-3 text-center">
             AI Resume Evaluator
           </h2>
-          <p className="text-gray-500 text-sm text-center mb-6">
+          <p className="text-gray-500 dark:text-slate-300 text-sm text-center mb-6">
             Powered by AI — Analyze your resume and get personalized job recommendations in seconds.
           </p>
           <div className="h-44 sm:h-52 bg-gradient-to-r from-blue-100 to-indigo-100 rounded-xl flex flex-col items-center justify-center">

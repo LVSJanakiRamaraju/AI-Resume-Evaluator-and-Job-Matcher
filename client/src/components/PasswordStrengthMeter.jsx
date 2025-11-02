@@ -13,10 +13,10 @@ export default function PasswordStrengthMeter({ password = '' }) {
 
   return (
     <div className="mt-2">
-      <div className="w-full bg-gray-200 h-2 rounded overflow-hidden mb-2">
+      <div className="w-full bg-gray-200 dark:bg-slate-700 h-2 rounded overflow-hidden mb-2">
         <div style={{ width: `${pct}%` }} className={`${color} h-2`} />
       </div>
-      <div className="text-xs text-gray-600 space-y-1">
+      <div className="text-xs text-gray-600 dark:text-slate-300 space-y-1">
         <div className={`${checks.length ? 'text-green-600' : 'text-gray-500'}`}> At least 8 characters</div>
         <div className={`${checks.letters ? 'text-green-600' : 'text-gray-500'}`}> Contains letters</div>
         <div className={`${checks.numbers ? 'text-green-600' : 'text-gray-500'}`}> Contains numbers</div>

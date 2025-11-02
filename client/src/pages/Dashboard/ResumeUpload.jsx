@@ -135,9 +135,9 @@ export default function ResumeUpload({ setActiveTab }) {
   }
 
   return (
-    <div className="max-w-5xl mx-auto p-6 space-y-6">
+  <div className="max-w-5xl mx-auto p-6 space-y-6 dark:text-slate-200">
       
-      <div className="bg-white p-6 rounded-lg shadow-md ">
+      <div className="bg-white dark:bg-slate-800 dark:text-slate-200 p-6 rounded-lg shadow-md ">
         <h2 className="text-2xl font-bold mb-4 text-center">Upload Your Resume</h2>
         <div className="flex items-center justify-center">
           <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row items-center gap-4">
@@ -150,7 +150,7 @@ export default function ResumeUpload({ setActiveTab }) {
         </div>
 
         {uploadProgress > 0 && uploadProgress < 100 && (
-          <div className="w-full bg-gray-200 rounded h-2 mt-4">
+          <div className="w-full bg-gray-200 dark:bg-slate-700 rounded h-2 mt-4">
             <div className="bg-blue-600 h-2 rounded" style={{ width: `${uploadProgress}%` }} />
           </div>
         )}
@@ -160,7 +160,7 @@ export default function ResumeUpload({ setActiveTab }) {
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
 
-        <div className="bg-white p-4 rounded-lg shadow-md overflow-y-auto max-h-[500px]">
+  <div className="bg-white dark:bg-slate-800 dark:text-slate-200 p-4 rounded-lg shadow-md overflow-y-auto max-h-[500px]">
           <h3 className="text-lg font-semibold mb-4">Uploaded Resumes</h3>
           {loading ? (
             <LoadingSpinner message="Loading..." />
@@ -175,7 +175,7 @@ export default function ResumeUpload({ setActiveTab }) {
           )}
         </div>
 
-        <div className="md:col-span-2 bg-white p-6 rounded-lg shadow-md overflow-y-auto max-h-[500px]">
+  <div className="md:col-span-2 bg-white dark:bg-slate-800 dark:text-slate-200 p-6 rounded-lg shadow-md overflow-y-auto max-h-[500px]">
           
           {selectedResume ? (
             <>

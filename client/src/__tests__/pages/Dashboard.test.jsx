@@ -3,18 +3,18 @@ import { render, screen, fireEvent } from '@testing-library/react'
 import Dashboard from '../../pages/Dashboard/Dashboard'
 import { AuthContext } from '../../context/AuthContext'
 import { ResumeContext } from '../../context/ResumeContext'
+// ThemeProvider removed
 
 const navigateMock = vi.fn()
 vi.mock('react-router-dom', () => ({
   useNavigate: () => navigateMock,
 }))
 
-describe('Dashboard', () => {
-  beforeEach(() => {
-    navigateMock.mockClear()
-  })
+beforeEach(() => {
+  navigateMock.mockClear()
+})
 
-  it('renders welcome with user name and logout button calls logout', () => {
+test('Dashboard - renders welcome with user name and logout button calls logout', () => {
     const logout = vi.fn()
 
     render(
@@ -33,7 +33,7 @@ describe('Dashboard', () => {
     expect(navigateMock).toHaveBeenCalledWith('/login')
   })
 
-  it('changes tabs when nav buttons clicked', () => {
+test('Dashboard - changes tabs when nav buttons clicked', () => {
     render(
       <AuthContext.Provider value={{ user: { name: 'Bob' }, logout: vi.fn() }}>
         <ResumeContext.Provider value={{ selectedResume: null, setSelectedResume: vi.fn() }}>
@@ -47,7 +47,7 @@ describe('Dashboard', () => {
     expect(screen.getByText(/uploaded resumes/i)).toBeInTheDocument()
   })
 
-  it('switches to resume upload tab when clicked', () => {
+test('Dashboard - switches to resume upload tab when clicked', () => {
     render(
       <AuthContext.Provider value={{ user: { name: 'Bob' }, logout: vi.fn() }}>
         <ResumeContext.Provider value={{ selectedResume: null, setSelectedResume: vi.fn() }}>
@@ -61,7 +61,7 @@ describe('Dashboard', () => {
     expect(screen.getByText(/upload your resume/i)).toBeInTheDocument()
   })
 
-  it('updates localStorage when tab changes and logout clears stored keys', () => {
+test('Dashboard - updates localStorage when tab changes and logout clears stored keys', () => {
     localStorage.setItem('activeTab', 'jobs')
     localStorage.setItem('selectedResume', JSON.stringify({ id: 123 }))
 
@@ -85,4 +85,3 @@ describe('Dashboard', () => {
     expect(localStorage.getItem('activeTab')).toBeNull()
     expect(localStorage.getItem('selectedResume')).toBeNull()
   })
-})

@@ -31,7 +31,7 @@ export default function Profile() {
     );
 
   return (
-    <div className="max-w-md mx-auto bg-white p-6 rounded-2xl shadow-lg border border-gray-100 text-gray-800 animate-fadeIn">
+    <div className="max-w-md mx-auto bg-white dark:bg-slate-800 dark:text-slate-200 p-6 rounded-2xl shadow-lg border border-gray-100 dark:border-slate-700 text-gray-800 animate-fadeIn">
       <div className="flex flex-col items-center mb-6">
         <div className="w-20 h-20 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-3xl font-bold">
           {user.name?.[0]?.toUpperCase()}
