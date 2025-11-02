@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom'
 import ResumeUpload from './ResumeUpload'
 import JobMatches from './JobMatches'
 import Profile from './Profile'
-import Header from '../../components/Header'
 import { AuthContext } from '../../context/AuthContext'
 
 export default function Dashboard() {
@@ -43,7 +42,12 @@ export default function Dashboard() {
 
   return (
     <div className="flex flex-col h-screen">
-      <Header user={user} onLogout={handleLogout} />
+      <header className="bg-blue-600 text-white p-4 flex justify-between items-center">
+        <h1 className="text-xl font-semibold">
+          Welcome, {user ? user.name : 'Loading...'}
+        </h1>
+        <button onClick={handleLogout} className="bg-white text-blue-600 px-3 py-1 rounded-md">Logout</button>
+      </header>
 
       <nav className="bg-white shadow-md flex justify-center space-x-6 p-3">
         <button onClick={() => handleTabChange('resume')} className={`${activeTab === 'resume' ? 'text-blue-600 font-semibold' : 'text-gray-600'}`}>Resume Upload</button>

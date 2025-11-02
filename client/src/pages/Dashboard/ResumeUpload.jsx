@@ -1,19 +1,10 @@
 import React, { useContext, useEffect, useState } from 'react';
 import API from '../../api';
 import { ResumeContext } from "../../context/ResumeContext.jsx";
-import ResumeListItem from '../../components/ResumeListItem'
-import LoadingSpinner from '../../components/LoadingSpinner'
-import FileUploader from '../../components/FileUploader'
-import Modal from '../../components/Modal'
-import Toast from '../../components/Toast'
 
 export default function ResumeUpload({ setActiveTab }) {
   const [file, setFile] = useState(null);
   const [message, setMessage] = useState('');
-  const [showModal, setShowModal] = useState(false);
-  const [resumeToDelete, setResumeToDelete] = useState(null);
-  const [toast, setToast] = useState({ open: false, message: '' });
-  const [uploadProgress, setUploadProgress] = useState(0);
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
   const [resumes, setResumes] = useState([]);
@@ -38,13 +29,11 @@ export default function ResumeUpload({ setActiveTab }) {
     fetchResumes();
   }, [selectedResume]);
 
-  const handleFileChange = (selected) => {
-    // FileUploader passes either File or array (if multiple)
-    const f = Array.isArray(selected) ? selected[0] : selected
-    setFile(f || null)
-    setMessage('')
-    setErrors(prev => ({ ...prev, file: '' }))
-  }
+  const handleFileChange = (e) => {
+    setFile(e.target.files[0]);
+    setMessage('');
+    setErrors(prev => ({ ...prev, file: '' }));
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -67,14 +56,8 @@ export default function ResumeUpload({ setActiveTab }) {
 
     try {
       setLoading(true);
-      setUploadProgress(0);
       const res = await API.post('/resume/upload', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
-        onUploadProgress: (progressEvent) => {
-          if (!progressEvent.lengthComputable) return
-          const percent = Math.round((progressEvent.loaded * 100) / progressEvent.total)
-          setUploadProgress(percent)
-        }
       });
 
       const uploadedResume = res.data;
@@ -85,13 +68,9 @@ export default function ResumeUpload({ setActiveTab }) {
       localStorage.setItem('selectedResume', JSON.stringify(uploadedResume));
 
       setResumes(prev => [uploadedResume, ...prev]);
-      setToast({ open: true, message: 'Resume uploaded' })
-      setTimeout(() => setUploadProgress(0), 500)
 
     } catch (err) {
-      const errMsg = err.response?.data?.error || err.message || 'Upload failed'
-      setMessage(errMsg);
-      setToast({ open: true, message: errMsg })
+      setMessage(err.response?.data?.error || 'Upload failed');
     } finally {
       setLoading(false);
     }
@@ -102,54 +81,29 @@ export default function ResumeUpload({ setActiveTab }) {
     localStorage.setItem("selectedResume", JSON.stringify(resume));
   };
 
-  const confirmDelete = (resume) => {
-    setResumeToDelete(resume)
-    setShowModal(true)
-  }
-
-  const handleDelete = async () => {
-    const target = resumeToDelete || selectedResume
-    if (!target) return
-    try {
-      setLoading(true)
-      await API.delete(`/resume/${target.id}`)
-      setResumes(prev => prev.filter(r => r.id !== target.id))
-      if (selectedResume?.id === target.id) {
-        setSelectedResume(null)
-        localStorage.removeItem('selectedResume')
-      }
-      setToast({ open: true, message: 'Resume deleted' })
-    } catch (err) {
-      console.error('Delete failed', err)
-      const errMsg = err.response?.data?.error || err.message || 'Delete failed'
-      setToast({ open: true, message: errMsg })
-    } finally {
-      setLoading(false)
-      setShowModal(false)
-      setResumeToDelete(null)
-    }
-  }
-
   return (
     <div className="max-w-5xl mx-auto p-6 space-y-6">
       
-      <div className="bg-white p-6 rounded-lg shadow-md ">
+      <div className="bg-white p-6 rounded-lg shadow-md">
         <h2 className="text-2xl font-bold mb-4 text-center">Upload Your Resume</h2>
-        <div className="flex items-center justify-center">
-          <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row items-center gap-4">
-            <div className="w-full sm:w-auto">
-              <FileUploader accept=".pdf" multiple={false} onFileChange={handleFileChange} />
-            </div>
-            <button type="submit" disabled={loading} className="bg-blue-600 text-white px-6 py-2 rounded disabled:opacity-50">{loading ? 'Uploading...' : 'Upload'}</button>
-            {errors.file && <p className="text-red-500 text-sm mt-2">{errors.file}</p>}
-          </form>
-        </div>
+        <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row items-center gap-4">
+          
+            <input
+              type="file"
+              accept=".pdf"
+              onChange={handleFileChange}
+              className="border p-2 rounded w-full sm:w-auto"
+            />
 
-        {uploadProgress > 0 && uploadProgress < 100 && (
-          <div className="w-full bg-gray-200 rounded h-2 mt-4">
-            <div className="bg-blue-600 h-2 rounded" style={{ width: `${uploadProgress}%` }} />
-          </div>
-        )}
+            <button
+              type="submit"
+              disabled={loading}
+              className="bg-blue-600 text-white px-6 py-2 rounded disabled:opacity-50"
+            >
+              {loading ? 'Uploading...' : 'Upload'}
+            </button>
+            {errors.file && <p className="text-red-500 text-sm mt-2">{errors.file}</p>}
+        </form>
 
         {message && <p className="mt-4 text-center text-gray-700">{message}</p>}
       </div>
@@ -158,14 +112,34 @@ export default function ResumeUpload({ setActiveTab }) {
 
         <div className="bg-white p-4 rounded-lg shadow-md overflow-y-auto max-h-[500px]">
           <h3 className="text-lg font-semibold mb-4">Uploaded Resumes</h3>
-          {loading ? (
-            <LoadingSpinner message="Loading..." />
+            {loading ? (
+            <div className="flex flex-col items-center justify-center mt-16">
+              <p className="text-gray-700 font-medium text-lg mb-2">Loading...</p>
+              <div className="w-12 h-12 border-4 border-gray-300 border-t-blue-500 rounded-full animate-spin"></div>
+              <p className="text-gray-700 mt-4 font-medium animate-pulse">
+                Processing your Resumes, please wait...
+              </p>
+              <span className="text-xs text-gray-400 mt-1">
+                This may take a few seconds...
+              </span>
+            </div>
           ) : resumes.length === 0 ? (
             <p className="text-gray-500 text-sm">No resumes uploaded yet.</p>
           ) : (
             <ul className="divide-y">
               {resumes.map((r) => (
-                <ResumeListItem key={r.id} resume={r} selected={selectedResume?.id === r.id} onSelect={handleSelectResume} onDelete={confirmDelete} />
+                <li
+                  key={r.id}
+                  className={`py-2 px-3 cursor-pointer hover:bg-blue-50 rounded ${
+                    selectedResume?.id === r.id ? 'bg-blue-100 font-semibold' : ''
+                  }`}
+                  onClick={() => handleSelectResume(r)}
+                >
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm font-semibold truncate max-w-[70%]">{r.original_name}</span>
+                    <span className="text-gray-400 text-xs">{new Date(r.created_at).toLocaleString()}</span>
+                  </div>
+                </li>
               ))}
             </ul>
           )}
@@ -233,21 +207,12 @@ export default function ResumeUpload({ setActiveTab }) {
                 <p className="text-gray-500">No analysis available for this resume.</p>
               )}
 
-              <div className="flex gap-3 mt-4">
-                <button
-                  onClick={() => setActiveTab('jobs')}
-                  className="bg-green-600 text-white px-6 py-2 rounded"
-                >
-                  View Job Matches
-                </button>
-
-                <button
-                  onClick={() => setShowModal(true)}
-                  className="bg-red-600 text-white px-4 py-2 rounded"
-                >
-                  Delete Resume
-                </button>
-              </div>
+              <button
+                onClick={() => setActiveTab('jobs')}
+                className="mt-4 bg-green-600 text-white px-6 py-2 rounded w-full"
+              >
+                View Job Matches
+              </button>
             </>
           ) : (
             <p className="text-gray-500 text-center mt-20">
@@ -256,17 +221,6 @@ export default function ResumeUpload({ setActiveTab }) {
           )}
         </div>
       </div>
-
-      <Modal open={showModal} title={resumeToDelete ? `Delete "${resumeToDelete.original_name}"?` : 'Delete resume?'} onClose={() => setShowModal(false)} className="max-w-md" footer={
-        <div className="flex gap-2 justify-end">
-          <button onClick={() => setShowModal(false)} className="px-4 py-2 rounded bg-gray-200">Cancel</button>
-          <button onClick={handleDelete} className="px-4 py-2 rounded bg-red-600 text-white">Delete</button>
-        </div>
-      }>
-        <p>Are you sure you want to delete {resumeToDelete ? `"${resumeToDelete.original_name}"` : 'the selected resume'}? This action cannot be undone.</p>
-      </Modal>
-
-      <Toast open={toast.open} message={toast.message} onClose={() => setToast({ open: false, message: '' })} />
     </div>
   );
 }
