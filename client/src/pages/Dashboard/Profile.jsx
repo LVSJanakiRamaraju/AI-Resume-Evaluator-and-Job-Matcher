@@ -1,9 +1,12 @@
 import React, { useEffect, useState } from "react";
 import API from "../../api";
 import { User, Mail, Shield } from "lucide-react";
+import Skeleton from "../../components/Skeleton";
+import SkillBadges from "../../components/SkillBadges";
 
 export default function Profile() {
   const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function fetchUser() {
@@ -12,54 +15,57 @@ export default function Profile() {
         setUser(res.data.user);
       } catch {
         setUser(null);
+      } finally {
+        setLoading(false);
       }
     }
     fetchUser();
   }, []);
 
-  if (!user)
+  if (loading)
     return (
       <div className="flex flex-col items-center justify-center mt-20">
-        <div className="w-12 h-12 border-4 border-gray-300 border-t-blue-500 rounded-full animate-spin"></div>
-        <p className="text-gray-700 mt-4 font-medium animate-pulse">
-          Loading profile...
-        </p>
-        <span className="text-xs text-gray-400 mt-1">
-          This may take a few seconds
-        </span>
+        <Skeleton width="w-24" height="h-24" rounded="rounded-full" />
+        <Skeleton width="w-48" height="h-6" className="mt-4" />
+        <Skeleton width="w-64" height="h-4" className="mt-2" />
+        <Skeleton width="w-32" height="h-4" className="mt-2" />
       </div>
     );
 
+  if (!user)
+    return (
+      <p className="text-center text-red-500 mt-20 animate-fadeIn">
+        Failed to load profile. Please refresh.
+      </p>
+    );
+
   return (
-    <div className="max-w-md mx-auto bg-white dark:bg-slate-800 dark:text-slate-200 p-6 rounded-2xl shadow-lg border border-gray-100 dark:border-slate-700 text-gray-800 animate-fadeIn">
+    <div className="max-w-md mx-auto bg-white dark:bg-slate-800 dark:text-slate-200 p-6 rounded-2xl shadow-xl border border-gray-100 dark:border-slate-700 text-gray-800 animate-fadeIn">
+      
       <div className="flex flex-col items-center mb-6">
-        <div className="w-20 h-20 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-3xl font-bold">
+        <div className="w-24 h-24 bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300 rounded-full flex items-center justify-center text-4xl font-bold shadow-md animate-bounce">
           {user.name?.[0]?.toUpperCase()}
         </div>
-        <h2 className="text-2xl font-bold mt-3">{user.name}</h2>
+        <h2 className="text-2xl font-bold mt-3 text-center">{user.name}</h2>
       </div>
 
       <div className="space-y-4">
-        <div className="flex items-center gap-3">
-          <User className="text-blue-600" size={20} />
-          <p className="text-sm">
-            <strong>Name:</strong> {user.name}
-          </p>
+        <div className="flex items-center gap-3 p-3 rounded-lg bg-gray-50 dark:bg-slate-700 hover:bg-gray-100 dark:hover:bg-slate-600 transition-colors shadow-sm">
+          <User className="text-blue-600 dark:text-blue-300" size={20} />
+          <p className="text-sm"><strong>Name:</strong> {user.name}</p>
         </div>
 
-        <div className="flex items-center gap-3">
-          <Mail className="text-blue-600" size={20} />
-          <p className="text-sm break-all">
-            <strong>Email:</strong> {user.email}
-          </p>
+        <div className="flex items-center gap-3 p-3 rounded-lg bg-gray-50 dark:bg-slate-700 hover:bg-gray-100 dark:hover:bg-slate-600 transition-colors shadow-sm break-all">
+          <Mail className="text-blue-600 dark:text-blue-300" size={20} />
+          <p className="text-sm"><strong>Email:</strong> {user.email}</p>
         </div>
 
-        <div className="flex items-center gap-3">
-          <Shield className="text-blue-600" size={20} />
-          <p className="text-sm capitalize">
-            <strong>Role:</strong> {user.role}
-          </p>
-        </div>
+        {user.skills?.length > 0 && (
+          <div>
+            <h4 className="font-semibold mb-2">Skills:</h4>
+            <SkillBadges skills={user.skills} />
+          </div>
+        )}
       </div>
     </div>
   );

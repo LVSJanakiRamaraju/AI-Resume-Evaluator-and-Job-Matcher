@@ -6,6 +6,7 @@ import { motion } from "framer-motion";
 
 export default function Header({ user, onLogout }) {
   const [logoOpen, setLogoOpen] = useState(false);
+  const userInitial = user && user.name ? user.name.charAt(0).toUpperCase() : "?";
 
   return (
     <header className="
@@ -40,13 +41,17 @@ export default function Header({ user, onLogout }) {
 
       <div className="flex items-center gap-4">
         
-        <div className="flex items-center gap-2 pr-2 border-r border-white/30">
-          <div className="
-              w-10 h-10 rounded-full bg-white/20 dark:bg-white/10 backdrop-blur-sm 
-              flex items-center justify-center
-            ">
-            <FiUser className="text-xl text-white/90" />
-          </div>
+          <div className="flex items-center gap-2 pr-2 border-r border-white/30">
+            <motion.button
+            type="button"
+            aria-label="Open logo"
+            onClick={() => setLogoOpen(true)}
+            whileHover={{ scale: 1.12 }}
+            whileTap={{ scale: 0.9 }}
+            className="w-12 h-12 rounded-full bg-white/20 dark:bg-white/5 flex items-center justify-center border border-white/20 backdrop-blur-md text-2xl font-bold text-white/90"
+          >
+            {userInitial}
+          </motion.button>
         </div>
 
         <motion.button
