@@ -1,4 +1,5 @@
 import nodemailer from 'nodemailer';
+import sgMail from '@sendgrid/mail';
 
 function buildTransportOptions() {
   if (process.env.SMTP_HOST) {
@@ -33,16 +34,32 @@ function buildTransportOptions() {
   };
 }
 
-const transporter = nodemailer.createTransport(buildTransportOptions());
+let transporter;
 
-transporter.verify()
-  .then(() => {
-    console.log('Email transporter verified');
-  })
-  .catch((err) => {
-    console.warn('Email transporter verification failed. Emails may not be sent.');
-    console.warn(err && err.message ? err.message : err);
-  });
+if (process.env.SENDGRID_ONLY === 'true') {
+  if (!process.env.SENDGRID_API_KEY) {
+    console.warn('SENDGRID_ONLY is true but SENDGRID_API_KEY is not set. Email send will fail.');
+  } else {
+    sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+    console.log('SendGrid configured as primary mail transport (SENDGRID_ONLY=true)');
+  }
+} else {
+  transporter = nodemailer.createTransport(buildTransportOptions());
+
+  transporter.verify()
+    .then(() => {
+      console.log('Email transporter verified');
+    })
+    .catch((err) => {
+      console.warn('Email transporter verification failed. Emails may not be sent.');
+      console.warn(err && err.message ? err.message : err);
+    });
+
+  if (process.env.SENDGRID_API_KEY) {
+    sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+    console.log('SendGrid configured as fallback mail transport');
+  }
+}
 
 export async function sendResetPasswordEmail(to, name, link) {
   const from = process.env.EMAIL_FROM || `"AI Resume Evaluator" <${process.env.EMAIL_USER}>`;
@@ -68,11 +85,41 @@ export async function sendResetPasswordEmail(to, name, link) {
   };
 
   try {
+    console.log(`sendResetPasswordEmail: preparing to send to=${to}`);
+
+    if (process.env.SENDGRID_ONLY === 'true') {
+      if (!process.env.SENDGRID_API_KEY) {
+        console.error('SENDGRID_ONLY=true but SENDGRID_API_KEY is not set. Cannot send email.');
+        throw new Error('SendGrid API key missing');
+      }
+      const msg = { to, from, subject: mailOptions.subject, html: mailOptions.html };
+      console.log('sendResetPasswordEmail: using SendGrid (SENDGRID_ONLY=true)');
+      const [response] = await sgMail.send(msg);
+      console.log('sendResetPasswordEmail: SendGrid response', { statusCode: response.statusCode, headers: response.headers });
+      return { transport: 'sendgrid', result: { statusCode: response.statusCode, headers: response.headers } };
+    }
+
+    console.log(`sendResetPasswordEmail: attempting SMTP send to ${to} using host=${process.env.SMTP_HOST || process.env.EMAIL_SERVICE || 'default'}`);
     const info = await transporter.sendMail(mailOptions);
-    console.log(`Reset email sent to ${to}; messageId=${info.messageId}`);
-    return info;
+    console.log(`sendResetPasswordEmail: SMTP send success; messageId=${info.messageId}`);
+    return { transport: 'smtp', result: info };
   } catch (err) {
     console.error('Email send failed:', err && err.message ? err.message : err);
+    console.error(err && err.stack ? err.stack : err);
+
+    if (process.env.SENDGRID_API_KEY) {
+      try {
+        console.log('sendResetPasswordEmail: attempting SendGrid fallback');
+        const msg = { to, from, subject: mailOptions.subject, html: mailOptions.html };
+        const [response] = await sgMail.send(msg);
+        console.log('sendResetPasswordEmail: SendGrid fallback response', { statusCode: response.statusCode, headers: response.headers });
+        return { transport: 'sendgrid', result: { statusCode: response.statusCode, headers: response.headers } };
+      } catch (sgErr) {
+        console.error('SendGrid send failed:', sgErr && sgErr.message ? sgErr.message : sgErr);
+        console.error(sgErr && sgErr.stack ? sgErr.stack : sgErr);
+      }
+    }
+
     throw new Error('Failed to send reset email');
   }
 }

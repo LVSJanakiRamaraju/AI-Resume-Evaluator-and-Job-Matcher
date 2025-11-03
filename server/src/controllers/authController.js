@@ -71,9 +71,10 @@ export async function forgotPassword(req, res) {
     const resetToken = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: RESET_TOKEN_EXPIRES });
     const resetLink = `${process.env.FRONTEND_URL}/reset-password/${resetToken}`;
 
-    await sendResetPasswordEmail(user.email, user.name, resetLink);
+  const sendResult = await sendResetPasswordEmail(user.email, user.name, resetLink);
+  console.log('Forgot password: sendResult=', JSON.stringify(sendResult));
 
-    return res.json({ message: 'Password reset link sent to your email.' });
+  return res.json({ message: 'Password reset link sent to your email.', sendResult });
   } catch (err) {
     console.error('Forgot password error:', err);
     return res.status(500).json({ error: 'Internal server error.' });
