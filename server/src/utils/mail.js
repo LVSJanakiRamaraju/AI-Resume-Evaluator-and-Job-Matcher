@@ -62,7 +62,16 @@ if (process.env.SENDGRID_ONLY === 'true') {
 }
 
 export async function sendResetPasswordEmail(to, name, link) {
-  const from = process.env.EMAIL_FROM || `"AI Resume Evaluator" <${process.env.EMAIL_USER}>`;
+  let from = process.env.EMAIL_FROM;
+  const hasEmailLike = (str) => typeof str === 'string' && /@/.test(str);
+  if (!from || !hasEmailLike(from)) {
+    from = `"AI Resume Evaluator" <${process.env.EMAIL_USER}>`;
+    if (!process.env.EMAIL_USER) {
+      console.warn('No valid EMAIL_FROM or EMAIL_USER found; email sends will likely fail.');
+    } else if (process.env.EMAIL_FROM) {
+      console.warn('EMAIL_FROM does not contain an address; falling back to EMAIL_USER for the sender address.');
+    }
+  }
 
   const mailOptions = {
     from,
@@ -116,6 +125,9 @@ export async function sendResetPasswordEmail(to, name, link) {
         return { transport: 'sendgrid', result: { statusCode: response.statusCode, headers: response.headers } };
       } catch (sgErr) {
         console.error('SendGrid send failed:', sgErr && sgErr.message ? sgErr.message : sgErr);
+        if (sgErr && sgErr.response && sgErr.response.body) {
+          console.error('SendGrid response body:', JSON.stringify(sgErr.response.body));
+        }
         console.error(sgErr && sgErr.stack ? sgErr.stack : sgErr);
       }
     }
