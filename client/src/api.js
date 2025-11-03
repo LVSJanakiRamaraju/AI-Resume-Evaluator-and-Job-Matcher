@@ -1,15 +1,6 @@
 import axios from 'axios';
 
-const rawBackend = import.meta.env.VITE_BACKEND_URL;
-let backend = rawBackend ? String(rawBackend).trim().replace(/\/+$/g, '') : '';
-if (backend && !/^https?:\/\//i.test(backend)) {
-  const defaultProto = (import.meta.env.MODE === 'development') ? 'http' : 'https';
-  backend = `${defaultProto}://${backend}`;
-}
-const base = backend ? `${backend}/api` : '/api';
-
-const API = axios.create({ baseURL: base });
-
+const API = axios.create({ baseURL: 'https://ai-resume-evaluator-and-job-matcher.onrender.com/api' });
 
 API.interceptors.request.use((req) => {
   const token = localStorage.getItem('token');
