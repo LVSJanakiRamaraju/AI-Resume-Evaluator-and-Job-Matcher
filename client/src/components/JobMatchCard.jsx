@@ -7,8 +7,8 @@ export default function JobMatchCard({ job }) {
 
   return (
     <div className="border rounded-lg p-4 shadow-sm hover:shadow-md transition bg-white dark:bg-slate-800 dark:border-slate-700 dark:text-slate-200">
-      <div className="flex justify-between items-center mb-2">
-        <p className="font-medium text-lg">{job.title}</p>
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-2 gap-2">
+        <p className="font-medium text-lg break-words">{job.title}</p>
         <p className="text-sm text-gray-600 dark:text-slate-300 font-semibold">{job.match_score}%</p>
       </div>
 
@@ -17,7 +17,7 @@ export default function JobMatchCard({ job }) {
       </div>
 
       {(reasoning && fit_skills.length > 0 && missing_skills.length > 0) && (
-  <div className="text-gray-700 dark:text-slate-200 text-sm mt-2 space-y-1">
+  <div className="text-gray-700 dark:text-slate-200 text-sm mt-2 space-y-1 whitespace-pre-wrap break-words">
           {reasoning && (
             <p>
               <span className="font-semibold">Reasoning:</span> {reasoning}
