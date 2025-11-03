@@ -5,7 +5,7 @@ const trimmed = rawBackend ? String(rawBackend).trim().replace(/\/+$/g, '') : ''
 const base = trimmed ? `${trimmed}/api` : '/api';
 
 const API = axios.create({
-  baseURL: base,
+  baseURL: 'https://ai-resume-evaluator-and-job-matcher.onrender.com/api',
 });
 
 
