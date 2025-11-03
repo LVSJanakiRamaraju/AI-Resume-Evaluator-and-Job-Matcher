@@ -50,7 +50,7 @@ export default function Login() {
 
       <div className="relative z-10 w-full max-w-md bg-white dark:bg-slate-800 dark:text-slate-200 rounded-2xl shadow-2xl border border-slate-100 dark:border-slate-700 p-8">
         <h2 className="text-3xl font-extrabold text-gray-800 dark:text-white text-center mb-2">
-          Welcome Back User,
+          Welcome Back,
         </h2>
         <p className="text-gray-500 dark:text-white text-center mb-6 text-sm">
           Log in to continue to your{" "}
