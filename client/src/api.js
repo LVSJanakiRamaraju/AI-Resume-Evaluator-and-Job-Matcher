@@ -1,7 +1,11 @@
 import axios from 'axios';
 
+const rawBackend = import.meta.env.VITE_BACKEND_URL;
+const trimmed = rawBackend ? String(rawBackend).trim().replace(/\/+$/g, '') : '';
+const base = trimmed ? `${trimmed}/api` : '/api';
+
 const API = axios.create({
-  baseURL: `${import.meta.env.VITE_BACKEND_URL}/api`,
+  baseURL: base,
 });
 
 
