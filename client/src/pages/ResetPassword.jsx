@@ -48,16 +48,16 @@ export default function ResetPassword() {
       <div className="absolute bottom-[-10%] right-[-10%] w-[350px] h-[350px] bg-indigo-300/20 rounded-full blur-3xl"></div>
 
       <div className="relative z-10 w-full max-w-md bg-white dark:bg-slate-800 dark:text-slate-200 rounded-2xl shadow-2xl border border-slate-100 dark:border-slate-700 p-8">
-        <h2 className="text-3xl font-extrabold text-gray-800 text-center mb-2">
+        <h2 className="text-3xl font-extrabold text-gray-800 dark:text-white text-center mb-2">
           Reset Password
         </h2>
-        <p className="text-gray-500 dark:text-slate-300 text-center mb-6 text-sm">
+        <p className="text-gray-500 dark:text-white text-center mb-6 text-sm">
           Enter your new password below to regain access to your account.
         </p>
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-1">
+            <label className="block text-sm font-semibold text-gray-700 dark:text-white mb-1">
               New Password
             </label>
             <PasswordInput
@@ -68,11 +68,11 @@ export default function ResetPassword() {
               required
               showStrength
             />
-            {errors.password && <p className="text-red-500 text-sm mt-1">{errors.password}</p>}
+            {errors.password && <p className="text-red-500 dark:text-red-400 text-sm mt-1">{errors.password}</p>}
           </div>
 
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-1">
+            <label className="block text-sm font-semibold text-gray-700 dark:text-white mb-1">
               Confirm Password
             </label>
             <PasswordInput
@@ -82,7 +82,7 @@ export default function ResetPassword() {
               placeholder="Confirm new password"
               required
             />
-            {errors.confirmPassword && <p className="text-red-500 text-sm mt-1">{errors.confirmPassword}</p>}
+            {errors.confirmPassword && <p className="text-red-500 dark:text-red-400 text-sm mt-1">{errors.confirmPassword}</p>}
           </div>
 
           <button
@@ -102,15 +102,15 @@ export default function ResetPassword() {
           <p
             className={`text-center text-sm mt-4 ${
               message.startsWith("Password reset successful!")
-                ? "text-green-600"
-                : "text-red-500"
+                ? "text-green-600 dark:text-green-400"
+                : "text-red-500 dark:text-red-400"
             }`}
           >
             {message}
           </p>
         )}
 
-        <p className="text-center text-gray-500 text-sm mt-6">
+        <p className="text-center text-gray-500 dark:text-white text-sm mt-6">
           Back to{" "}
           <Link
             to="/login"

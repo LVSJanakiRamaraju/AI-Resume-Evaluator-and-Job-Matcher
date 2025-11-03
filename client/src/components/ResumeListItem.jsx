@@ -22,14 +22,14 @@ export default function ResumeListItem({ resume, selected, onSelect, onDelete })
         </div>
 
         {onDelete && (
-            <IconButton
+      <IconButton
             ariaLabel={`Delete ${resume.original_name}`}
             title={`Delete ${resume.original_name}`}
             onClick={(e) => {
                 e.stopPropagation();
                 onDelete(resume);
             }}
-            className="ml-auto text-red-600"
+      className="ml-auto text-red-600 dark:text-red-400"
             >
             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5"
                 viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">

@@ -155,7 +155,7 @@ export default function ResumeUpload({ setActiveTab }) {
           </div>
         )}
 
-        {message && <p className="mt-4 text-center text-gray-700">{message}</p>}
+        {message && <p className="mt-4 text-center text-gray-700 dark:text-white">{message}</p>}
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -165,7 +165,7 @@ export default function ResumeUpload({ setActiveTab }) {
           {loading ? (
             <LoadingSpinner message="Loading..." />
           ) : resumes.length === 0 ? (
-            <p className="text-gray-500 text-sm">No resumes uploaded yet.</p>
+            <p className="text-gray-500 text-sm dark:text-white">No resumes uploaded yet.</p>
           ) : (
             <ul className="divide-y">
               {resumes.map((r) => (
@@ -177,14 +177,14 @@ export default function ResumeUpload({ setActiveTab }) {
 
   <div className="md:col-span-2 bg-white dark:bg-slate-800 dark:text-slate-200 p-6 rounded-lg shadow-md overflow-y-auto max-h-[500px]">
           
-          {selectedResume ? (
+              {selectedResume ? (
             <>
               <h3 className="text-xl font-semibold mb-4">
                 Analysis for {selectedResume.original_name}
               </h3>
 
               {selectedResume.analysis_result ? (
-                <div className="space-y-4 text-gray-700">
+                <div className="space-y-4 text-gray-700 dark:text-white">
 
                   <div>
                     <h4 className="font-semibold">Skills:</h4>
@@ -198,7 +198,7 @@ export default function ResumeUpload({ setActiveTab }) {
                         {selectedResume.analysis_result.experience.map((exp, i) => (
                           <li key={i}>
                             <span className="font-semibold">{exp.Title}</span> at {exp.Company} ({exp.Dates})
-                            <p className="ml-2 text-gray-600">{exp.Description}</p>
+                            <p className="ml-2 text-gray-600 dark:text-white">{exp.Description}</p>
                           </li>
                         ))}
                       </ul>
@@ -225,8 +225,8 @@ export default function ResumeUpload({ setActiveTab }) {
                         {selectedResume.analysis_result.project_highlights.map((proj, i) => (
                           <li key={i}>
                             <span className="font-semibold">{proj.ProjectName}</span> — 
-                            <span className="text-gray-600"> {proj.Technologies}</span>
-                            <p className="ml-2 text-gray-600">{proj.Description}</p>
+                            <span className="text-gray-600 dark:text-white"> {proj.Technologies}</span>
+                            <p className="ml-2 text-gray-600 dark:text-white">{proj.Description}</p>
                           </li>
                         ))}
                       </ul>
@@ -234,7 +234,7 @@ export default function ResumeUpload({ setActiveTab }) {
                   )}
                 </div>
               ) : (
-                <p className="text-gray-500">No analysis available for this resume.</p>
+                <p className="text-gray-500 dark:text-white">No analysis available for this resume.</p>
               )}
 
               <div className="flex gap-3 mt-4">
@@ -254,7 +254,7 @@ export default function ResumeUpload({ setActiveTab }) {
               </div>
             </>
           ) : (
-            <p className="text-gray-500 text-center mt-20">
+            <p className="text-gray-500 text-center mt-20 dark:text-white">
               Select a resume to view analysis
             </p>
           )}

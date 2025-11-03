@@ -46,9 +46,9 @@ export default function Dashboard() {
       <Header user={user} onLogout={handleLogout} />
 
       <nav className="bg-white dark:bg-slate-800 shadow-md flex justify-center space-x-6 p-3">
-        <button onClick={() => handleTabChange('resume')} className={`${activeTab === 'resume' ? 'text-blue-600 font-semibold' : 'text-gray-600'}`}>Resume Upload</button>
-        <button onClick={() => handleTabChange('jobs')} className={`${activeTab === 'jobs' ? 'text-blue-600 font-semibold' : 'text-gray-600'}`}>Job Matches</button>
-        <button onClick={() => handleTabChange('profile')} className={`${activeTab === 'profile' ? 'text-blue-600 font-semibold' : 'text-gray-600'}`}>Profile</button>
+        <button onClick={() => handleTabChange('resume')} className={`${activeTab === 'resume' ? 'text-blue-600 font-semibold' : 'text-gray-600 dark:text-white'}`}>Resume Upload</button>
+        <button onClick={() => handleTabChange('jobs')} className={`${activeTab === 'jobs' ? 'text-blue-600 font-semibold' : 'text-gray-600 dark:text-white'}`}>Job Matches</button>
+        <button onClick={() => handleTabChange('profile')} className={`${activeTab === 'profile' ? 'text-blue-600 font-semibold' : 'text-gray-600 dark:text-white'}`}>Profile</button>
       </nav>
 
       <main className="flex-1 p-6 overflow-y-auto bg-gray-50 dark:bg-slate-900 dark:text-slate-200">

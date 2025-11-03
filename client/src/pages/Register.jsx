@@ -48,16 +48,16 @@ export default function Register() {
       <div className="absolute bottom-[-10%] right-[-10%] w-[350px] h-[350px] bg-indigo-300/20 rounded-full blur-3xl"></div>
 
       <div className="relative z-10 w-full max-w-md bg-white dark:bg-slate-800 dark:text-slate-200 rounded-2xl shadow-2xl border border-slate-100 dark:border-slate-700 p-8">
-        <h2 className="text-3xl font-extrabold text-gray-800 text-center mb-2">
+        <h2 className="text-3xl font-extrabold text-gray-800 dark:text-white text-center mb-2">
           Create Your Account 
         </h2>
-        <p className="text-gray-500 dark:text-slate-300 text-center mb-6 text-sm">
+        <p className="text-gray-500 dark:text-white text-center mb-6 text-sm">
           Join the <span className="text-blue-600 font-medium">AI Resume Evaluator</span> and get job matches powered by intelligence.
         </p>
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-1">
+            <label className="block text-sm font-semibold text-gray-700 dark:text-white mb-1">
               Full Name
             </label>
             <input
@@ -70,12 +70,12 @@ export default function Register() {
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
             />
             {errors.name && (
-              <p className="text-red-500 text-sm mt-1">{errors.name}</p>
+              <p className="text-red-500 dark:text-red-400 text-sm mt-1">{errors.name}</p>
             )}
           </div>
 
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-1">
+            <label className="block text-sm font-semibold text-gray-700 dark:text-white mb-1">
               Email
             </label>
             <input
@@ -90,7 +90,7 @@ export default function Register() {
           </div>
 
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-1">
+            <label className="block text-sm font-semibold text-gray-700 dark:text-white mb-1">
               Password
             </label>
             <PasswordInput
@@ -102,7 +102,7 @@ export default function Register() {
               showStrength
             />
             {errors.password && (
-              <p className="text-red-500 text-sm mt-1">{errors.password}</p>
+              <p className="text-red-500 dark:text-red-400 text-sm mt-1">{errors.password}</p>
             )}
           </div>
 
@@ -123,15 +123,15 @@ export default function Register() {
           <p
             className={`text-center text-sm mt-4 ${
               message.startsWith("Registration successful")
-                ? "text-green-600"
-                : "text-red-500"
+                ? "text-green-600 dark:text-green-400"
+                : "text-red-500 dark:text-red-400"
             }`}
           >
             {message}
           </p>
         )}
 
-        <p className="text-center text-gray-500 text-sm mt-6">
+        <p className="text-center text-gray-500 dark:text-white text-sm mt-6">
           Already have an account?{" "}
           <Link
             to="/login"

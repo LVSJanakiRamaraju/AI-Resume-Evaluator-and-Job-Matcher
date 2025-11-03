@@ -36,16 +36,16 @@ export default function ForgotPassword() {
       <div className="absolute bottom-[-10%] right-[-10%] w-[350px] h-[350px] bg-indigo-300/20 rounded-full blur-3xl"></div>
 
       <div className="relative z-10 w-full max-w-md bg-white dark:bg-slate-800 dark:text-slate-200 rounded-2xl shadow-2xl border border-slate-100 dark:border-slate-700 p-8">
-        <h2 className="text-3xl font-extrabold text-gray-800 text-center mb-2">
+        <h2 className="text-3xl font-extrabold text-gray-800 dark:text-white text-center mb-2">
           Forgot Password
         </h2>
-        <p className="text-gray-500 dark:text-slate-300 text-center mb-6 text-sm">
+        <p className="text-gray-500 dark:text-white text-center mb-6 text-sm">
           Enter your registered email, and we’ll send you a link to reset your password.
         </p>
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-1">
+            <label className="block text-sm font-semibold text-gray-700 dark:text-white mb-1">
               Email Address
             </label>
             <input
@@ -57,7 +57,7 @@ export default function ForgotPassword() {
               required
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
             />
-            {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email}</p>}
+            {errors.email && <p className="text-red-500 dark:text-red-400 text-sm mt-1">{errors.email}</p>}
           </div>
 
           <button
@@ -77,15 +77,15 @@ export default function ForgotPassword() {
           <p
             className={`text-center text-sm mt-4 ${
               message.startsWith("Password reset link sent")
-                ? "text-green-600"
-                : "text-red-500"
+                ? "text-green-600 dark:text-green-400"
+                : "text-red-500 dark:text-red-400"
             }`}
           >
             {message}
           </p>
         )}
 
-        <p className="text-center text-gray-500 text-sm mt-6">
+        <p className="text-center text-gray-500 dark:text-white text-sm mt-6">
           Remembered your password?{" "}
           <Link
             to="/login"
