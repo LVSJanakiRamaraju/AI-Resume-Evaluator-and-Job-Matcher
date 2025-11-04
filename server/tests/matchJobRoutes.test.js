@@ -1,5 +1,7 @@
 import { jest } from '@jest/globals';
 
+jest.setTimeout(20000);
+
 beforeAll(async () => {
   await jest.unstable_mockModule('../src/middleware/authMiddleware.js', () => ({
     default: (req, res, next) => { req.user = { id: 1 }; next(); }

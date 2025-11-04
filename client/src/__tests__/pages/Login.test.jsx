@@ -92,7 +92,7 @@ test('renders all static UI elements on login page', () => {
     </AuthContext.Provider>
   );
 
-  expect(screen.getByText(/welcome back user/i)).toBeInTheDocument();
+  expect(screen.getByText(/welcome back/i)).toBeInTheDocument();
   expect(screen.getByText(/ai resume evaluator/i)).toBeInTheDocument();
   expect(screen.getByPlaceholderText(/enter your email/i)).toBeInTheDocument();
   expect(screen.getByPlaceholderText(/enter your password/i)).toBeInTheDocument();

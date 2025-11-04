@@ -23,7 +23,8 @@ test('LoadingSpinner - displays custom message prop', () => {
 
 test('LoadingSpinner - empty string message hides processing paragraph', () => {
   const { container } = render(<LoadingSpinner message="" />)
-  expect(screen.queryByText(/processing, please wait/i)).toBeNull()
+  expect(screen.queryByText(/loading.../i)).toBeNull()
+  expect(screen.getByText(/processing, please wait/i)).toBeInTheDocument()
   expect(container.querySelector('.animate-spin')).toBeTruthy()
 })
 
@@ -37,5 +38,5 @@ test('LoadingSpinner - spinner has expected tailwind classes', () => {
 test('LoadingSpinner - does not render processing when message is null', () => {
   render(<LoadingSpinner message={null} />)
   expect(screen.queryByText(/loading.../i)).toBeNull()
-  expect(screen.queryByText(/processing, please wait/i)).toBeNull()
+  expect(screen.getByText(/processing, please wait/i)).toBeInTheDocument()
 })

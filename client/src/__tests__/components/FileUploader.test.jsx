@@ -8,20 +8,23 @@ test('FileUploader - shows accepted types and responds to click', () => {
   expect(screen.getByText(/accepted: \.pdf/i)).toBeInTheDocument()
 })
 
-test('FileUploader - shows initial no file label', () => {
+test('FileUploader - shows initial dropzone texts', () => {
   render(<FileUploader accept=".pdf" />)
-  expect(screen.getByText(/no file chosen/i)).toBeInTheDocument()
+  expect(screen.getByText(/drag & drop your file here/i)).toBeInTheDocument()
+  expect(screen.getByText(/or click to browse/i)).toBeInTheDocument()
+  expect(screen.getByText(/accepted:/i)).toBeInTheDocument()
 })
 
 test('FileUploader - accepts multiple prop', () => {
   const onFileChange = vi.fn()
   render(<FileUploader multiple onFileChange={onFileChange} />)
-  expect(screen.getByText(/no file chosen/i)).toBeInTheDocument()
+  expect(screen.getByText(/drag & drop your file here/i)).toBeInTheDocument()
+  expect(screen.getByText(/accepted:/i)).toBeInTheDocument()
 })
 
 test('FileUploader - dragOver toggles visual state', () => {
   render(<FileUploader />)
-  const dropzone = screen.getByText(/drag & drop files here, or click to select/i)
+  const dropzone = screen.getByText(/drag & drop your file here/i)
   expect(dropzone).toBeInTheDocument()
 })
 

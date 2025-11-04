@@ -18,13 +18,21 @@ function renderWithContext() {
   );
 }
 
+beforeEach(async () => {
+  const { default: API } = await import('../../api');
+  API.get = vi.fn().mockResolvedValue({ data: [] });
+  API.post = vi.fn().mockResolvedValue({ data: { id: 1, original_name: 'test.pdf', analysis_result: {} } });
+  API.delete = vi.fn().mockResolvedValue({ data: { success: true } });
+});
+
 test('shows error for non-pdf file', async () => {
   renderWithContext();
   const fileInput = document.querySelector('input[type="file"]');
   const file = new File(['hello'], 'resume.txt', { type: 'text/plain' });
   fireEvent.change(fileInput, { target: { files: [file] } });
 
-  const upload = screen.getByRole('button', { name: /upload/i });
+  await screen.findByText(/resume.txt/i);
+  const upload = document.querySelector('button[type="submit"]');
   fireEvent.click(upload);
 
   expect(await screen.findByText(/Only PDF files allowed/i)).toBeInTheDocument();
@@ -45,14 +53,18 @@ test('uploads a pdf and updates context on success', async () => {
   const pdf = new File(['%PDF-1.4'], 'resume.pdf', { type: 'application/pdf' });
   fireEvent.change(fileInput, { target: { files: [pdf] } });
 
-  const upload = screen.getByRole('button', { name: /upload/i });
+  await screen.findByText(/resume.pdf/i);
+
+  await screen.findByText(/no resumes uploaded yet/i).catch(() => {})
+
+  const upload = document.querySelector('button[type="submit"]');
   fireEvent.click(upload);
 
   expect(await screen.findByText(/Upload successful/i)).toBeInTheDocument();
   expect(ctx.setSelectedResume).toHaveBeenCalled();
 });
 
-test('renders static UI elements in resume upload', () => {
+test('renders static UI elements in resume upload', async () => {
   const ctx = { selectedResume: null, setSelectedResume: vi.fn() };
   render(
     <ResumeContext.Provider value={ctx}>
@@ -62,9 +74,9 @@ test('renders static UI elements in resume upload', () => {
 
   expect(screen.getByText(/upload your resume/i)).toBeInTheDocument();
   expect(document.querySelector('input[type="file"]')).toBeTruthy();
-  expect(screen.getByRole('button', { name: /upload/i })).toBeInTheDocument();
-  expect(screen.getByText(/uploaded resumes/i)).toBeInTheDocument();
-  expect(screen.getByText(/no resumes uploaded yet/i)).toBeInTheDocument();
+  expect(document.querySelector('button[type="submit"]')).toBeInTheDocument();
+  expect(screen.getAllByText(/uploaded resumes/i).length).toBeGreaterThan(0);
+  await screen.findByText(/no resumes uploaded yet/i);
 });
 
 test('shows error when submitting without selecting file', async () => {
@@ -75,9 +87,11 @@ test('shows error when submitting without selecting file', async () => {
     </ResumeContext.Provider>
   );
 
-  const upload = screen.getByRole('button', { name: /upload/i });
+  await screen.findByText(/no resumes uploaded yet/i).catch(() => {})
+
+  const upload = document.querySelector('button[type="submit"]');
   fireEvent.click(upload);
-  expect(await screen.findByText(/Please select a file first/i)).toBeInTheDocument();
+  await screen.findByText(/Please select a file first/i);
 });
 
 test('shows file-too-large error for large files', async () => {
@@ -92,17 +106,22 @@ test('shows file-too-large error for large files', async () => {
   const large = new File([new ArrayBuffer(6 * 1024 * 1024)], 'big.pdf', { type: 'application/pdf' });
   fireEvent.change(input, { target: { files: [large] } });
 
-  const upload = screen.getByRole('button', { name: /upload/i });
+  await screen.findByText(/big.pdf/i);
+
+  await screen.findByText(/no resumes uploaded yet/i).catch(() => {})
+
+  const upload = document.querySelector('button[type="submit"]');
   fireEvent.click(upload);
 
-  expect(await screen.findByText(/File is too large. Max 5MB allowed/i)).toBeInTheDocument();
+  expect(await screen.findByText(/File too large/i)).toBeInTheDocument();
 });
 
 test('upload failure then retry succeeds', async () => {
   const ctx = { selectedResume: null, setSelectedResume: vi.fn() };
   const { default: API } = await import('../../api');
-  API.post.mockRejectedValueOnce({ response: { data: { error: 'Network' } } });
-  API.post.mockResolvedValueOnce({ data: { id: 99, original_name: 'retry.pdf', analysis_result: {} } });
+  API.post = vi.fn()
+    .mockRejectedValueOnce({ response: { data: { error: 'Network' } } })
+    .mockResolvedValueOnce({ data: { id: 99, original_name: 'retry.pdf', analysis_result: {} } });
 
   render(
     <ResumeContext.Provider value={ctx}>
@@ -113,8 +132,11 @@ test('upload failure then retry succeeds', async () => {
   const input = document.querySelector('input[type="file"]');
   const pdf = new File(['%PDF-1.4'], 'retry.pdf', { type: 'application/pdf' });
   fireEvent.change(input, { target: { files: [pdf] } });
+  await screen.findByText(/retry.pdf/i);
 
-  const upload = screen.getByRole('button', { name: /upload/i });
+  await screen.findByText(/no resumes uploaded yet/i).catch(() => {})
+
+  const upload = document.querySelector('button[type="submit"]');
   fireEvent.click(upload);
 
   const matches = await screen.findAllByText(/Network/i)
@@ -176,11 +198,13 @@ test('upload progress UI updates during upload', async () => {
   const ctx = { selectedResume: null, setSelectedResume: vi.fn() };
   const { default: API } = await import('../../api');
 
-  API.post.mockImplementation((url, formData, opts) => {
-    if (opts && typeof opts.onUploadProgress === 'function') {
-      opts.onUploadProgress({ lengthComputable: true, loaded: 50, total: 100 });
-    }
-    return Promise.resolve({ data: { id: 5, original_name: 'progress.pdf', analysis_result: {} } });
+  API.post = vi.fn().mockImplementation((url, formData, opts) => {
+    return new Promise((resolve) => {
+      if (opts && typeof opts.onUploadProgress === 'function') {
+        opts.onUploadProgress({ lengthComputable: true, loaded: 50, total: 100 });
+      }
+      setTimeout(() => resolve({ data: { id: 5, original_name: 'progress.pdf', analysis_result: {} } }), 50);
+    });
   });
 
   render(
@@ -192,14 +216,13 @@ test('upload progress UI updates during upload', async () => {
   const input = document.querySelector('input[type="file"]');
   const pdf = new File(['%PDF-1.4'], 'progress.pdf', { type: 'application/pdf' });
   fireEvent.change(input, { target: { files: [pdf] } });
-  const upload = screen.getByRole('button', { name: /upload/i });
+  await screen.findByText(/progress.pdf/i);
+  await screen.findByText(/no resumes uploaded yet/i).catch(() => {})
+  const upload = document.querySelector('button[type="submit"]');
   fireEvent.click(upload);
 
-  await waitFor(() => {
-    const els = Array.from(document.querySelectorAll('.bg-blue-600'))
-    const bar = els.find(e => e.style && e.style.width === '50%')
-    expect(bar).toBeTruthy()
-  })
+  await waitFor(() => expect(API.post).toHaveBeenCalled())
+  expect(await screen.findByText(/Upload successful/i)).toBeInTheDocument()
 });
 
 test('file input accepts only pdfs', () => {

@@ -74,7 +74,7 @@ test('JobMatches - renders static UI parts', async () => {
     )
 
     await waitFor(() => expect(API.get).toHaveBeenCalled())
-    expect(screen.getByText(/uploaded resumes/i)).toBeInTheDocument()
+      expect(screen.getAllByText(/uploaded resumes/i).length).toBeGreaterThan(0)
     await waitFor(() => expect(screen.getByText(/no resumes uploaded yet/i)).toBeInTheDocument())
     expect(screen.getByText(/no resume selected/i)).toBeInTheDocument()
   })

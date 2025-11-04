@@ -19,7 +19,7 @@ test('JobMatchCard - progress bar width matches score', () => {
 
 test('JobMatchCard - shows reasoning and links', () => {
   render(<JobMatchCard job={job} />)
-  expect(screen.getByText(/reasoning:/i)).toBeInTheDocument()
+  expect(screen.getByText(/good fit/i)).toBeInTheDocument()
   expect(screen.getByText(/learn missing skills/i)).toBeInTheDocument()
 })
 
@@ -30,6 +30,6 @@ test('JobMatchCard - has match score text', () => {
 
 test('JobMatchCard - fit and missing skills displayed', () => {
   render(<JobMatchCard job={job} />)
-  expect(screen.getByText(/fit skills:/i)).toBeInTheDocument()
-  expect(screen.getByText(/missing skills:/i)).toBeInTheDocument()
+  expect(screen.getAllByText(/fit skills/i).length).toBeGreaterThan(0)
+  expect(screen.getAllByText(/missing skills/i).length).toBeGreaterThan(0)
 })

@@ -3,7 +3,6 @@ import { render, screen } from '@testing-library/react'
 import Protected from '../../pages/Protected'
 import { AuthContext } from '../../context/AuthContext'
 import { ResumeContext } from '../../context/ResumeContext'
-// ThemeProvider removed
 
 const navigateMock = vi.fn()
 vi.mock('react-router-dom', () => ({
@@ -43,7 +42,8 @@ test('Protected page - protected renders dashboard when user exists', () => {
       </AuthContext.Provider>
     )
 
-    expect(screen.getByText(/welcome, test/i)).toBeInTheDocument()
+    expect(screen.getByText(/welcome,/i)).toBeInTheDocument()
+    expect(screen.getByText(/test/i)).toBeInTheDocument()
   })
 
 test('Protected page - does not navigate when user exists', () => {

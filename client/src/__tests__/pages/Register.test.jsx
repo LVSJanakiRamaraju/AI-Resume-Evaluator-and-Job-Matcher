@@ -88,9 +88,9 @@ test('renders all static UI elements', () => {
   expect(screen.getByPlaceholderText(/enter your name/i)).toBeInTheDocument();
   expect(screen.getByPlaceholderText(/enter your email/i)).toBeInTheDocument();
   expect(screen.getByPlaceholderText(/create a password/i)).toBeInTheDocument();
-  expect(screen.getByText(/at least 8 characters/i)).toBeInTheDocument();
-  expect(screen.getByText(/contains letters/i)).toBeInTheDocument();
-  expect(screen.getByText(/contains numbers/i)).toBeInTheDocument();
+  expect(screen.getByText(/min\s*8/i)).toBeInTheDocument();
+  expect(screen.getByText(/letters/i)).toBeInTheDocument();
+  expect(screen.getByText(/numbers/i)).toBeInTheDocument();
   expect(screen.getByText(/login here/i)).toBeInTheDocument();
 });
 

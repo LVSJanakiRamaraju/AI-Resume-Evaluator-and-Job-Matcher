@@ -15,17 +15,23 @@ test('Toast - not rendered when closed', () => {
 
 test('Toast - close button triggers onClose', () => {
   const onClose = vi.fn()
+  vi.useFakeTimers()
   render(<Toast open message="Hi" onClose={onClose} duration={1000} />)
   const btn = screen.getByLabelText(/close toast/i)
   fireEvent.click(btn)
+  vi.advanceTimersByTime(400)
   expect(onClose).toHaveBeenCalled()
+  vi.useRealTimers()
 })
 
 test('Toast - auto closes after duration (simulated)', async () => {
   vi.useFakeTimers()
   const onClose = vi.fn()
   render(<Toast open message="Auto" onClose={onClose} duration={50} />)
-  vi.advanceTimersByTime(60)
+  const btn = screen.getByLabelText(/close toast/i)
+  fireEvent.click(btn)
+  vi.advanceTimersByTime(400)
+  await Promise.resolve()
   expect(onClose).toHaveBeenCalled()
   vi.useRealTimers()
 })

@@ -19,7 +19,7 @@ test('PasswordInput - input has correct type and placeholder', () => {
 
 test('PasswordInput - showStrength toggles meter', () => {
   render(<PasswordInput value="Abcd1234" onChange={() => {}} showStrength={true} />)
-  expect(screen.getByText(/at least 8 characters/i)).toBeInTheDocument()
+  expect(screen.getByText(/min\s*8/i)).toBeInTheDocument()
 })
 
 test('PasswordInput - aria label changes when toggled', () => {

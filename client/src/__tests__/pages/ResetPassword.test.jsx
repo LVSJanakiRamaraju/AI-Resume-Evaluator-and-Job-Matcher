@@ -68,7 +68,7 @@ test('renders static UI elements on reset password page', () => {
   expect(screen.getByPlaceholderText(/enter new password/i)).toBeInTheDocument();
   expect(screen.getByPlaceholderText(/confirm new password/i)).toBeInTheDocument();
   expect(screen.getByText(/back to/i)).toBeInTheDocument();
-  expect(screen.getByText(/at least 8 characters/i)).toBeInTheDocument();
+  expect(screen.getByText(/min\s*8/i)).toBeInTheDocument();
 });
 
 test('shows server error when reset fails', async () => {

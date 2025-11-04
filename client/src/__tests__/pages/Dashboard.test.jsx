@@ -3,7 +3,6 @@ import { render, screen, fireEvent } from '@testing-library/react'
 import Dashboard from '../../pages/Dashboard/Dashboard'
 import { AuthContext } from '../../context/AuthContext'
 import { ResumeContext } from '../../context/ResumeContext'
-// ThemeProvider removed
 
 const navigateMock = vi.fn()
 vi.mock('react-router-dom', () => ({
@@ -25,7 +24,8 @@ test('Dashboard - renders welcome with user name and logout button calls logout'
       </AuthContext.Provider>
     )
 
-    expect(screen.getByText(/welcome, alice/i)).toBeInTheDocument()
+  expect(screen.getByText(/welcome,/i)).toBeInTheDocument()
+  expect(screen.getByText(/alice/i)).toBeInTheDocument()
 
     const logoutBtn = screen.getByRole('button', { name: /logout/i })
     fireEvent.click(logoutBtn)
@@ -42,9 +42,9 @@ test('Dashboard - changes tabs when nav buttons clicked', () => {
       </AuthContext.Provider>
     )
 
-    const jobsBtn = screen.getByRole('button', { name: /job matches/i })
-    fireEvent.click(jobsBtn)
-    expect(screen.getByText(/uploaded resumes/i)).toBeInTheDocument()
+  const jobsBtns = screen.getAllByRole('button', { name: /job matches/i })
+  fireEvent.click(jobsBtns[0])
+  expect(screen.getAllByText(/uploaded resumes/i).length).toBeGreaterThan(0)
   })
 
 test('Dashboard - switches to resume upload tab when clicked', () => {
@@ -75,8 +75,8 @@ test('Dashboard - updates localStorage when tab changes and logout clears stored
       </AuthContext.Provider>
     )
 
-    const jobsBtn = screen.getByRole('button', { name: /job matches/i })
-    fireEvent.click(jobsBtn)
+  const jobsBtns = screen.getAllByRole('button', { name: /job matches/i })
+  fireEvent.click(jobsBtns[0])
     expect(localStorage.getItem('activeTab')).toBe('jobs')
 
     const logoutBtn = screen.getByRole('button', { name: /logout/i })
