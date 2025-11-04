@@ -13,7 +13,7 @@ beforeEach(() => {
   navigateMock.mockClear()
 })
 
-test('Dashboard - renders welcome with user name and logout button calls logout', () => {
+test('Dashboard - renders welcome with user name and logout button calls logout', async () => {
     const logout = vi.fn()
 
     render(
@@ -27,9 +27,14 @@ test('Dashboard - renders welcome with user name and logout button calls logout'
   expect(screen.getByText(/welcome,/i)).toBeInTheDocument()
   expect(screen.getByText(/alice/i)).toBeInTheDocument()
 
-    const logoutBtn = screen.getByRole('button', { name: /logout/i })
-    fireEvent.click(logoutBtn)
-    expect(logout).toHaveBeenCalled()
+  const userMenuBtn = screen.getByRole('button', { name: /user menu/i })
+  fireEvent.click(userMenuBtn)
+  const menuLogout = await screen.findByRole('button', { name: /logout/i })
+  fireEvent.click(menuLogout)
+  const allLogout = await screen.findAllByRole('button', { name: /logout/i })
+  const confirmLogout = allLogout[allLogout.length - 1]
+  fireEvent.click(confirmLogout)
+  expect(logout).toHaveBeenCalled()
     expect(navigateMock).toHaveBeenCalledWith('/login')
   })
 
@@ -61,7 +66,7 @@ test('Dashboard - switches to resume upload tab when clicked', () => {
     expect(screen.getByText(/upload your resume/i)).toBeInTheDocument()
   })
 
-test('Dashboard - updates localStorage when tab changes and logout clears stored keys', () => {
+test('Dashboard - updates localStorage when tab changes and logout clears stored keys', async () => {
     localStorage.setItem('activeTab', 'jobs')
     localStorage.setItem('selectedResume', JSON.stringify({ id: 123 }))
 
@@ -79,9 +84,14 @@ test('Dashboard - updates localStorage when tab changes and logout clears stored
   fireEvent.click(jobsBtns[0])
     expect(localStorage.getItem('activeTab')).toBe('jobs')
 
-    const logoutBtn = screen.getByRole('button', { name: /logout/i })
-    fireEvent.click(logoutBtn)
-    expect(logout).toHaveBeenCalled()
+  const userMenuBtn = screen.getByRole('button', { name: /user menu/i })
+  fireEvent.click(userMenuBtn)
+  const menuLogout = await screen.findByRole('button', { name: /logout/i })
+  fireEvent.click(menuLogout)
+  const allLogout = await screen.findAllByRole('button', { name: /logout/i })
+  const confirmLogout = allLogout[allLogout.length - 1]
+  fireEvent.click(confirmLogout)
+  expect(logout).toHaveBeenCalled()
     expect(localStorage.getItem('activeTab')).toBeNull()
     expect(localStorage.getItem('selectedResume')).toBeNull()
   })

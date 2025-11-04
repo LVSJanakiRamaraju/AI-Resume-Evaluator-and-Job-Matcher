@@ -1,4 +1,6 @@
 import React, { useEffect, useRef } from 'react'
+import { motion } from 'framer-motion'
+import { createPortal } from 'react-dom'
 
 export default function Modal({
   open = false,
@@ -30,18 +32,21 @@ export default function Modal({
 
   const stopPropagation = (e) => e.stopPropagation()
 
-  return (
+  const modalContent = (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
+      className="fixed inset-0 z-[9999] flex items-center justify-center min-h-screen bg-black/60 backdrop-blur-sm"
       onClick={onClose}
       role="dialog"
       aria-modal="true"
       aria-labelledby="modal-title"
     >
-      <div
+      <motion.div
         ref={modalRef}
         onClick={stopPropagation}
-        className={`relative bg-white dark:bg-slate-800 dark:text-slate-200 rounded-xl shadow-xl w-full max-w-xl mx-4 p-5 scale-95 opacity-0 animate-modal-in ${className}`}
+        initial={{ scale: 0.96, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        transition={{ duration: 0.18, ease: 'easeOut' }}
+        className={`relative z-[10000] bg-white dark:bg-slate-800 dark:text-slate-200 rounded-xl shadow-xl w-full max-w-xl mx-4 p-5 ${className}`}
       >
         <div className="flex justify-between items-center mb-3">
           <h3 id="modal-title" className="text-lg font-semibold">
@@ -59,7 +64,9 @@ export default function Modal({
         <div className="mb-4">{children}</div>
 
         {footer && <div className="pt-2">{footer}</div>}
-      </div>
+      </motion.div>
     </div>
   )
+
+  return createPortal(modalContent, document.body)
 }

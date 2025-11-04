@@ -43,7 +43,7 @@ export default function Profile() {
     <div className="max-w-md mx-auto bg-white dark:bg-slate-800 dark:text-slate-200 p-6 rounded-2xl shadow-xl border border-gray-100 dark:border-slate-700 text-gray-800 animate-fadeIn">
       
       <div className="flex flex-col items-center mb-6">
-        <div className="w-24 h-24 bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300 rounded-full flex items-center justify-center text-4xl font-bold shadow-md animate-bounce">
+        <div className="w-24 h-24 bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300 rounded-full flex items-center justify-center text-4xl font-bold shadow-md">
           {user.name?.[0]?.toUpperCase()}
         </div>
         <h2 className="text-2xl font-bold mt-3 text-center">{user.name}</h2>
