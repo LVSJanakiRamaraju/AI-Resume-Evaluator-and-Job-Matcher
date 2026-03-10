@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   postgres:
     image: postgres:15
@@ -21,7 +19,6 @@ services:
     env_file:
       - ./.env
     environment:
-      # If you prefer, set DATABASE_URL in .env; otherwise this points to the postgres service in compose network
       DATABASE_URL: ${DATABASE_URL:-postgresql://postgres:postgres@postgres:5432/resume_db}
       JWT_SECRET: ${JWT_SECRET}
       GEMINI_API_KEY: ${GEMINI_API_KEY}
@@ -35,22 +32,19 @@ services:
   client:
     build:
       context: ./client
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.prod
       args:
-        # VITE_BACKEND_URL must be available at build time so the built client calls the correct backend
         VITE_BACKEND_URL: ${VITE_BACKEND_URL:-http://localhost:${SERVER_PORT:-5000}}
     container_name: resume_client
     restart: always
     env_file:
       - ./.env
     environment:
-      # runtime port for vite preview inside the container
-      PORT: ${CLIENT_PORT:-5173}
+      NODE_ENV: production
     depends_on:
       - server
     ports:
-      - "${CLIENT_PORT:-5173}:${CLIENT_PORT:-5173}"
-    command: ["sh", "-c", "npm run preview"]
+      - "${CLIENT_PORT:-5173}:80"
 
 volumes:
   postgres_data:

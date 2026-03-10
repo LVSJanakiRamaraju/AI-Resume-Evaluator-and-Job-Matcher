@@ -1,3 +1,27 @@
+FROM node:22-alpine AS build
+
+WORKDIR /app
+
+# Install dependencies
+COPY package*.json ./
+RUN npm ci --silent
+
+# Copy sources and build
+COPY . .
+RUN npm run build
+
+FROM nginx:stable-alpine
+
+# Remove default nginx website
+RUN rm -rf /usr/share/nginx/html/*
+
+# Copy built assets from builder
+COPY --from=build /app/dist /usr/share/nginx/html
+
+# Expose port 80 for serving static files
+EXPOSE 80
+
+CMD ["nginx", "-g", "daemon off;"]
 # Multi-stage build: build the Vite app then serve with nginx
 FROM node:22-alpine AS build
 WORKDIR /app
