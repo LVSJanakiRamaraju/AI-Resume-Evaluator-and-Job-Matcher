@@ -5,13 +5,13 @@ export default function ResumeListItem({ resume, selected, onSelect, onDelete })
   const formattedDate = new Date(resume.created_at).toLocaleString()
 
   return (
-    <li
+    <div
       className={`group py-3 px-4 rounded-lg flex justify-between items-center cursor-pointer transition-all
         ${selected ? 'bg-blue-100 dark:bg-slate-700 shadow-sm' : 'hover:bg-blue-50 dark:hover:bg-slate-700'}
       `}
       onClick={() => onSelect(resume)}
       tabIndex={0}
-      role="button"
+      role="listitem"
       onKeyDown={(e) => e.key === 'Enter' && onSelect(resume)}
     >
 
@@ -51,6 +51,6 @@ export default function ResumeListItem({ resume, selected, onSelect, onDelete })
           </svg>
         </IconButton>
       )}
-    </li>
+    </div>
   )
 }

@@ -10,7 +10,23 @@ import pool from './db.js';
 const PORT = process.env.PORT || 5000;
 const app = express();
 
-app.use(cors({ origin: process.env.FRONTEND_URL , credentials: true }));
+const allowedOrigins = [
+  process.env.FRONTEND_URL,
+  'http://localhost:5173',
+  'https://ai-resume-evaluator-and-job-matcher.onrender.com',
+  'https://ai-resume-evaluator-and-job-matcher-1.onrender.com'
+];
+
+app.use(cors({ 
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true 
+}));
 app.use(express.json());
 
 app.get('/', (req, res) => {

@@ -1,6 +1,8 @@
+import { GoogleGenerativeAI } from "@google/generative-ai";
+
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
-const API_MODEL = 'gemini-2.5-flash-preview-09-2025';
-const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/${API_MODEL}:generateContent?key=${GEMINI_API_KEY}`;
+const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
+const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
 const RESUME_SCHEMA = {
   type: "OBJECT",
@@ -55,32 +57,6 @@ const RESUME_SCHEMA = {
 };
 
 
-async function fetchWithRetry(url, options, maxRetries = 3) {
-  let delay = 1000;
-  for (let i = 0; i < maxRetries; i++) {
-    try {
-      const response = await fetch(url, options);
-      if (response.ok) {
-        return response;
-      }
-      if (response.status === 429 && i < maxRetries - 1) {
-        await new Promise(resolve => setTimeout(resolve, delay));
-        delay *= 2; 
-        continue;
-      }
-      throw new Error(`API request failed with status: ${response.status} ${response.statusText}`);
-    } catch (error) {
-      if (i < maxRetries - 1) {
-        await new Promise(resolve => setTimeout(resolve, delay));
-        delay *= 2;
-        continue;
-      }
-      throw error;
-    }
-  }
-  throw new Error('Max retries reached.');
-}
-
 /**
  * Analyzes resume text using the Gemini API to return structured JSON data.
  * @param {string} resumeText - The raw text of the resume.
@@ -91,36 +67,32 @@ export async function analyzeResume(resumeText) {
     throw new Error("GEMINI_API_KEY environment variable is not set.");
   }
 
-  const systemInstruction = `You are a world-class AI document parser. Your sole task is to analyze the provided resume text and extract all relevant information (skills, experience, education, projects), strictly conforming to the provided JSON schema. Do not add any conversational text or markdown formatting outside of the JSON structure itself. Use 'N/A' or an empty array/string if data is not found.`;
 
-  const userQuery = `Analyze and extract the required information from the following resume text:\n\nRESUME TEXT:\n---\n${resumeText}\n---`;
+  const prompt = `You are a resume parser. Extract information from this resume and return ONLY a valid JSON object with this structure (use empty arrays if sections are missing):
+{
+  "skills": ["skill1", "skill2"],
+  "experience": [{"Title": "Job Title", "Company": "Company Name", "Dates": "Start - End", "Description": "Description"}],
+  "education": [{"Degree": "Degree", "Institution": "Institution", "Dates": "Years"}],
+  "project_highlights": [{"ProjectName": "Name", "Technologies": "Tech stack", "Description": "Description"}]
+}
 
-  const payload = {
-    contents: [{ parts: [{ text: userQuery }] }],
-    systemInstruction: { parts: [{ text: systemInstruction }] },
-    generationConfig: {
-      responseMimeType: "application/json",
-      responseSchema: RESUME_SCHEMA,
-      temperature: 0.1 
-    },
-  };
+RESUME:
+${resumeText}
+
+Return ONLY the JSON object, no other text.`;
 
   try {
-    const response = await fetchWithRetry(API_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    });
-
-    const result = await response.json();
-    const textOutput = result?.candidates?.[0]?.content?.parts?.[0]?.text;
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+    const textOutput = response.text();
 
     if (!textOutput) {
-      const errorMessage = result?.error?.message || 'LLM returned an empty response or an error.';
-      throw new Error(`API Error: ${errorMessage}`);
+      throw new Error('LLM returned an empty response');
     }
 
-    const parsedJson = JSON.parse(textOutput);
+    const jsonMatch = textOutput.match(/\{[\s\S]*\}/);
+    const jsonString = jsonMatch ? jsonMatch[0] : textOutput;
+    const parsedJson = JSON.parse(jsonString);
     return parsedJson;
 
   } catch (err) {
